@@ -6,10 +6,9 @@ var customCommands = require('./storage/custom.json');
 var commands = require('./commands.js')
 var schedule = require('node-schedule-tz');
 const PREFIX = "?";
+const questionRegex = /^[?]+$/;
 const TOKEN = config.token;
 const TIMEOUT = 1500;
-const questionRegex = /^[?]+$/;
-const botRegex = /\bbot\b/;
 const serverID = "146007387466235905";
 
 //Load Bot - loop through functions in commands and add to hashmap
@@ -44,10 +43,6 @@ try {
     bot.on("message", function(message) {
         if (message.author.equals(bot.user)) {
             return;
-        }
-        
-        if (botRegex.test(message.content.toLowerCase())) {
-            message.react("\uD83D\uDC40");
         }
 
         if (!message.content.startsWith(PREFIX)) {

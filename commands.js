@@ -1,19 +1,17 @@
 const Discord = require("discord.js");
 var fs = require("fs");
 var customCommands = require('./storage/custom.json');
-var parties = require('./storage/parties.json');
-var guilds = require('./storage/guilds.json');
 var votes = require('./storage/votes.json')
-const BOTNAME = "IOU Bot 2.0";
+const BOTNAME = "Empire Ruler";
 var PREFIX = "?";
-const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n" + "Type **" + PREFIX + "suggest** to get a link to suggestions";
+const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n";
 var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-var boolFunCommands = false;
+var boolFunCommands = true;
 var bot;
-const BINGOCHANNELID = "395460192420233216";
-const CHALLENGECHANNELID = "146030310767722496";
+const BINGOCHANNELID = "";
+const CHALLENGECHANNELID = "";
+const FUNCHANNELID = "";
 const BINGOTIMEOUT = 5000;
-
 
 exports.setters = {
     setBot: function(theBot) {
@@ -62,27 +60,18 @@ exports.functions = {
     
         var stringDate = EST.getDate() + "/" + (EST.getMonth() + 1) + "/" + EST.getFullYear();
         var stringTime = EST.getHours() + ":" + EST.getMinutes() + ":" + EST.getSeconds();
-        message.author.send("**Server Time:** " + days[EST.getDay()] + " " + stringDate + " " + stringTime + " (EST)");
+        message.channel.send("**Server Time:** " + days[EST.getDay()] + " " + stringDate + " " + stringTime + " (EST)");
     }, 
     help: function(message) {
         var showingRoles = "";
         var additionalBot = "";
-        var additionalParty = "";
-        var additionalGuild = "";
     
         if (message.member != null) {
-            if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
-                showingRoles = "IOU Team";
-                additionalBot = PREFIX + "add *(IOU Team only)* - `" + PREFIX + "add command-name description` \n" +  
-                PREFIX + "remove *(IOU Team only)* - `" + PREFIX + "remove command-name` \n";
-                additionalBot = additionalBot + PREFIX + "rules *(IOU Team only)* \n";
-                additionalBot = additionalBot + PREFIX + "echo *(IOU Team only)* \n";
-                additionalParty = additionalParty + PREFIX + "resetparties *(IOU Team only)* \n";
-                additionalGuild = additionalParty + PREFIX + "resetguilds *(IOU Team only)* \n";
-                additionalGuild = additionalParty + PREFIX + "removepartyname *(IOU Team only)* \n";
-            }
-            else if (message.member.roles.find("name", "Spun & Spud")) {
-                showingRoles = "Spun & Spud";
+            if (message.member.roles.find("name", "Empire Leadership")) {
+                showingRoles = "Empire Leadership";
+                additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
+                PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
+                additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
             }
             else {
                 showingRoles = "Member";
@@ -98,7 +87,6 @@ exports.functions = {
         }
         var botRelated = PREFIX + "help \n" + 
         PREFIX + "info \n" +
-        PREFIX + "suggest \n" +
         PREFIX + "time \n" +
         PREFIX + "serverinfo \n" +
         PREFIX + "bingoadd \n" +
@@ -108,16 +96,6 @@ exports.functions = {
         var challengeCommands = PREFIX + "bronze \n" +
         PREFIX + "silver \n" +
         PREFIX + "gold \n";
-    
-        var partyGuild = PREFIX + "addparty - `" + PREFIX + "addparty required-dps description` \n" +
-        PREFIX + "removeparty \n" +
-        PREFIX + "parties \n" +
-        additionalParty + 
-        PREFIX + "addguild - `" + PREFIX + "addguild \"guild name\" description` \n" +
-        PREFIX + "addguildformat - `" + PREFIX + "addguildformat \"guild name\" \"guild level\" \"guild buildings\" \"stone required\" \"DPS required\" \"members in guild\" \"spots open\" \"description\"` \n" +
-        PREFIX + "removeguild \n" +
-        PREFIX + "guilds \n" +
-        additionalGuild;
 
         var votingCommands = PREFIX + 'votenew - `' + PREFIX + 'votenew "Name of Poll" "# of times you can vote" "Option One" "Option Two" "Etc"` \n' +
         PREFIX + 'vote - `' + PREFIX + 'vote "Name of Poll" "index of option (eg 1)"` \n' +
@@ -150,7 +128,6 @@ exports.functions = {
         .setAuthor("Showing commands for - " + showingRoles, message.author.avatarURL)
         .addField("Bot Related Commands", botRelated, true)
         .addField("Challenge Commands", challengeCommands, true)
-        .addField("Party/Guild Commands", partyGuild)
         .addField("Voting Commands", votingCommands)
         .addField("Event Commands", eventCommands, true)
         .addField("Useful Links", usefulLinks, true)
@@ -204,16 +181,13 @@ exports.functions = {
         .setFooter("Server creation - " + message.guild.createdAt, message.guild.owner.user.avatarURL)
         message.channel.send(embed);
     },
-    suggest: function(message) {
-        message.channel.send("Suggest a change to the bot by creating an issue at https://github.com/puremana/iou-bot/issues");
-    },
     add: function(message) {
         if (message.member == null) {
             message.channel.send("Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
+        if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper")) {
             if (args.length < 3) {
                 message.channel.send("Please enter the command in the format `" + PREFIX + "add command_name command description`.");
                 return;
@@ -228,7 +202,7 @@ exports.functions = {
             message.channel.send("Command " + PREFIX + args[1] + " added.");
         }
         else {
-            message.channel.send("You do not have the IOU Team role.");
+            message.channel.send("You do not have the Empire Leadership role.");
         }
     },
     remove: function(message) {
@@ -237,7 +211,7 @@ exports.functions = {
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
+        if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper")) {
             if (args.length == 2) {
                 for (c in customCommands) {
                     if (args[1].toLowerCase() == c) {
@@ -255,33 +229,7 @@ exports.functions = {
             }
         }
         else {
-            message.channel.send("You do not have the IOU Team role.");
-        }
-    },
-    rules: function(message) {
-        if (message.member == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
-            var args = message.content.substring(PREFIX.length).split(" ");
-            var user = bot.users.find("id", args[1]);
-            var rules = "**1)**    No spamming or flooding the chat with messages outside of #spam. \n" +
-            "**2)**    Keep heated arguments inside #jerry-springer. \n" + 
-            "**3)**    No adult (18+), explicit, or controversial messages. \n" +
-            "**4)**    Keep to relevant channel topic. \n" + 
-            "**5)**    No advertising other games or Discord servers without permission. \n" + 
-            "**6)**    Be respectful of others within reason (this includes the IOU Team). \n" +
-            "**7)**    Do not ask for personal information";
-
-            var embed = new Discord.RichEmbed()
-            .addField("Rules for the IOURPG Discord", rules)
-            .setColor(0xF33900)
-            .setFooter("Rules sent from " + message.author.username);
-            user.send(embed);
-        }
-        else {
-            message.channel.send("You do not have the IOU Team role.");
+            message.channel.send("You do not have the Empire Leadership role.");
         }
     },
     echo: function(message) {
@@ -289,7 +237,7 @@ exports.functions = {
             message.channel.send("Message author is undefined.");
             return;
         }
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
+        if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper")) {
             var text = message.content.substring(PREFIX.length + 5);
             message.channel.send(text);
             if (message.channel.type != "dm") {
@@ -301,234 +249,7 @@ exports.functions = {
             }
         }
         else {
-            message.channel.send("You do not have the IOU Team role.");
-        }
-    },
-
-    //Parties - Guilds    
-    addparty: function(message) {
-        if (message.author == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        var args = message.content.substring(PREFIX.length).split(" ");
-        if (args.length < 3) {
-            message.channel.send("Please enter the command in the format `" + PREFIX + "addparty required-dps description`.");
-            return;
-        }
-        var date = new Date();
-        var current = date.toString();
-        var desc = "";
-        for (i = 2; i < args.length; i++) {
-            desc = desc + args[i] + " ";
-        }
-        if (desc.length == 0) {
-            message.channel.send("Description was short to be stored, please try again.");
-            return;
-        }
-        if (desc.length > 244) {
-            message.channel.send("Description was too long to be stored, please try again.");
-            return;
-        }
-        //make it an array :]
-        var pJson = [current, message.author.username, args[1], desc];
-        if (!verifyJson(pJson)) {
-            message.channel.send("Message could not be saved. Please try again.");
-            return;
-        }
-        parties[message.author.id] = pJson;
-        fs.writeFile("storage/parties.json", JSON.stringify(parties), "utf8");
-        message.channel.send("Party added. Type **" + PREFIX + "parties** to get sent a list of current available parties");
-    },
-    removeparty: function(message) {
-        if (message.author == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        for (p in parties) {
-            if (message.author.id == p) {
-                delete parties[p];
-                fs.writeFile("storage/parties.json", JSON.stringify(parties), "utf8");
-                message.channel.send("Party removed.");
-                return;
-            }
-        }
-        message.channel.send("Couldn't find party for " + message.author.username);
-    },
-    removepartyname: function(message) {
-        if (message.member == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
-            var name = message.content.substring(PREFIX.length + "removepartyname".length + 1);
-            for (party in parties) {
-                if (parties[party][1] == name) {
-                    delete parties[party];
-                    fs.writeFile("storage/parties.json", JSON.stringify(parties), "utf8");
-                    message.channel.send(name + "'s party has been deleted.");
-                    return;
-                }
-            }
-            message.channel.send("Please enter a valid name to delete.");
-        }
-        else {
-            message.channel.send("You do not have the IOU Team role.");
-        }
-    },
-    resetparties: function(message) {
-        if (message.member == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
-            parties = {};
-            parties["id"] = ['time','name','required dps','description'];
-            fs.writeFile("storage/parties.json", JSON.stringify(parties), "utf8");
-            message.channel.send("All parties have been reset.");
-        }
-        else {
-            message.channel.send("You do not have the IOU Team role.");
-        }
-    },
-    parties: function(message) {
-        for (p in parties) {
-            var embed = new Discord.RichEmbed()
-            .addField(parties[p][1] + " - " + parties[p][2], parties[p][3])
-            .setColor(0x1A8CBE)
-            .setFooter(parties[p][0])
-            message.author.send(embed);
-        }
-    },
-    addguild: function(message) {
-        if (message.author == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        var args = message.content.substring(PREFIX.length).split(" ");    
-        if (args.length < 3) {
-            message.channel.send("Please enter the command in the format `" + PREFIX + "addguild \"guildname\" description`.");
-            return;
-        }
-        var date = new Date();
-        var current = date.toString();
-        var desc = "";
-        for (i = 1; i < args.length; i++) {
-            desc = desc + args[i] + " ";
-        }
-    
-        var rawSplit = desc.split("\"");
-        if (rawSplit.length > 1) {
-            var guildName = rawSplit[1];
-            var desc = "";
-            for (i = 2; i < rawSplit.length; i++) {
-                desc = desc + rawSplit[i] + " ";
-            }
-        }
-        else {
-            var guildName = args[1];
-            var desc = desc.substr(desc.indexOf(" ") + 1);
-        }
-        if (desc.length > 254) {
-            message.channel.send("Message is too long to be stored, please try again.");
-            return;
-        }
-        var gJson = ["normal", current, message.author.username, guildName, desc];
-        if (!verifyJson(gJson)) {
-            message.channel.send("Message could not be saved. Please try again.");
-            return;
-        }
-        guilds[message.author.id] = gJson;
-        fs.writeFile("storage/guilds.json", JSON.stringify(guilds), "utf8");
-        message.channel.send("Guild *" + guildName + "* added. Type **" + PREFIX + "guilds** to get sent a list of current available guilds.");
-    },
-    addguildformat: function(message) {
-        if (message.author == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        var args = message.content.substring(PREFIX.length).split(" ");
-        var desc = "";
-        for (i = 0; i < args.length; i++) {
-            desc = desc + args[i] + " ";
-        }
-        var rawSplit = desc.split("\"");
-        if (rawSplit.length != 17) {
-            message.channel.send("Please enter the command in the following format `" + PREFIX + "addguildformat \"guild name\" \"guild level\" \"guild buildings\" \"stone required\" \"DPS required\" \"members in guild\" \"spots open\" \"description\"`");
-            return;
-        }
-        var date = new Date();
-        var current = date.toString();
-        var gJson = ["format", current, message.author.username, rawSplit[1], rawSplit[3], rawSplit[5], rawSplit[7], rawSplit[9], rawSplit[11], rawSplit[13], rawSplit[15]];
-        for (arg in gJson) {
-            if (gJson[arg].length > 254) {
-                message.channel.send("One or more of the arguments were too long. Please try again.");
-                return;
-            }
-            if (gJson[arg].length == 0) {
-                message.channel.send("One or more of the arguments were short long. Please try again.");
-                return;
-            }
-        }
-        if (!verifyJson(gJson)) {
-            message.channel.send("Message could not be saved. Please try again.");
-            return;
-        }
-        guilds[message.author.id] = gJson;
-        fs.writeFile("storage/guilds.json", JSON.stringify(guilds), "utf8");
-        message.channel.send("Guild " + rawSplit[1] + " added. Type **" + PREFIX + "guilds** to get sent a list of current available guilds.");
-    },
-    resetguilds: function(message) {
-        if (message.member == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper")) {
-            guilds = {};
-            fs.writeFile("storage/guilds.json", JSON.stringify(guilds), "utf8");
-            message.channel.send("All guilds have been reset.");
-        }
-        else {
-            message.channel.send("You do not have the IOU Team role.");
-        }
-    },
-    removeguild: function(message) {
-        if (message.author == null) {
-            message.channel.send("Message author is undefined.");
-            return;
-        }
-        for (g in guilds) {
-            if (message.author.id == g) {
-                var guildName = guilds[g][3];
-                delete guilds[g];
-                fs.writeFile("storage/guilds.json", JSON.stringify(guilds), "utf8");
-                message.channel.send(guildName + " guild removed.");
-                return;
-            }
-        }
-        message.channel.send("Couldn't find party for " + message.author.username);
-    },
-    guilds: function(message) {
-        for (g in guilds) {
-            if (guilds[g][0] == "format") {
-                var embed = new Discord.RichEmbed()
-                .addField(guilds[g][3] + " - " + guilds[g][2], guilds[g][10])
-                .addField("Guild Level", guilds[g][4], true)
-                .addField("Guild Buildings", guilds[g][5], true)
-                .addField("Stone Required", guilds[g][6], true)
-                .addField("DPS Required", guilds[g][7], true)
-                .addField("Members", guilds[g][8] + "/40", true)
-                .addField("Spots Open", guilds[g][9], true)
-                .setColor(0xFFC300)
-                .setFooter(guilds[g][1])
-            }
-            else {
-                var embed = new Discord.RichEmbed()
-                .addField(guilds[g][3] + " - " + guilds[g][2], guilds[g][4])
-                .setColor(0xFFC300)
-                .setFooter(guilds[g][1])
-            }
-            message.author.send(embed);
+            message.channel.send("You do not have the Empire Leadership role.");
         }
     },
 
@@ -710,7 +431,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to close poll
-                if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
                     //check the poll isn't already closed
                     if (votes[v]["closed"] == true) {
                         message.channel.send("This poll has already been closed.");
@@ -740,7 +461,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to close poll
-                if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
                     //check the poll isn't open
                     if (votes[v]["closed"] == false) {
                         message.channel.send("This poll is already open.");
@@ -770,7 +491,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to delete
-                if (message.member.roles.find("name", "IOU Team") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.find("name", "Empire Leadership") || message.member.roles.find("name", "Helper") || message.member.id == vote[v]["author"]) {
                     //delete poll
                     delete votes[v];
                     message.channel.send("Poll **" + rawSplit[1] + "** is now deleted.");
@@ -838,14 +559,14 @@ exports.functions = {
             return;
         }
         //check doesn't already have bingo role
-        if (message.member.roles.find("name", "bingo")) {
+        if (message.member.roles.find("name", "Bingo!!")) {
             message.channel.send("You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
                 .then(m => m.delete(BINGOTIMEOUT))
                 .catch(err => console.log(err));
             return;
         }
         //add the role
-        var bingoRole = message.member.guild.roles.find("name", "bingo");
+        var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
         message.channel.send("Your bingo role has been added.")
             .then(m => m.delete(BINGOTIMEOUT))
             .catch(err => console.log(err));
@@ -857,9 +578,9 @@ exports.functions = {
             return;
         }
         //check they have the bingo role
-        if (message.member.roles.find("name", "bingo")) {
+        if (message.member.roles.find("name", "Bingo!!")) {
             //remove the role
-            var bingoRole = message.member.guild.roles.find("name", "bingo");
+            var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
             message.channel.send("Your bingo role has been removed.")
                 .then(m => m.delete(BINGOTIMEOUT))
                 .catch(err => console.log(err));
@@ -874,7 +595,7 @@ exports.functions = {
 
     //fun
     cat: function(message) {
-        if ((message.channel.id != "channelID") || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
             return;
         }
         Promise.all([httpRequest("http", "random.cat", "/meow")]).then(values => { 
@@ -883,7 +604,7 @@ exports.functions = {
         });
     },
     dog: function(message) {
-        if ((message.channel.id != "channelID") || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
             return;
         }
         Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
@@ -892,7 +613,7 @@ exports.functions = {
         });
     },
     flip: function(message) {
-        if ((message.channel.id != "channelID") || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
             return;
         }
         var toss = (Math.floor(Math.random() * 2) == 0);
@@ -904,7 +625,7 @@ exports.functions = {
         }
     },
     ball: function(message) {
-        if ((message.channel.id != "channelID") || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
             return;
         }
         Promise.all([httpRequest("https", "8ball.delegator.com", "/magic/JSON/abc")]).then(values => { 
