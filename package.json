@@ -1,0 +1,16 @@
+{
+  "name": "ME-bot",
+  "version": "1.1.0",
+  "description": "ME Discord bot",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Level",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.2.1",
+    "fs": "0.0.1-security",
+    "node-schedule-tz": "^1.2.1-4"
+  }
+}
