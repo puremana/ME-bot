@@ -1,7 +1,8 @@
 const Discord = require("discord.js");
 var fs = require("fs");
 var customCommands = require('./storage/custom.json');
-var votes = require('./storage/votes.json')
+var votes = require('./storage/votes.json');
+var pushes = require('./storage/pushes.json');
 const BOTNAME = "Empire Ruler";
 var PREFIX = "?";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n";
@@ -10,8 +11,10 @@ var boolFunCommands = true;
 var bot;
 const BINGOCHANNELID = "";
 const CHALLENGECHANNELID = "";
-const FUNCHANNELID = "";
+const FUNCHANNELID = "355227226389872642";
 const BINGOTIMEOUT = 5000;
+const PUSHTIMEOUT = 15000;
+const PUSHINSTRUCTIONS = "Signup using the `" + PREFIX + "signup AccountName` command. Use `" + PREFIX + "in` when you enter and `" + PREFIX + "out` when you leave.";
 
 exports.setters = {
     setBot: function(theBot) {
@@ -593,12 +596,108 @@ exports.functions = {
         }
     },
 
+    //push
+    pushsetup: function(message) {
+        if (!message.member.roles.find("name", "Empire Leadership")) {
+            message.channel.send("You require the Empire Leadership role to create a push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+        //creates default messages
+        var args = message.content.substring(PREFIX.length).split(" ");
+        var rawSplit = message.content.split("\"");
+
+        //correct format
+        if (rawSplit.length != 7) {
+            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "push description"`')
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        //number as argument
+        if (isNaN(rawSplit[1])) {
+            message.channel.send("Please make sure the first argument (available slots) is a number before creating the poll.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        //push has been created already
+        for (p in pushes) {
+            if (p == message.channel.id) {
+                message.channel.send("A push has already been created in this channel, please use `" + PREFIX + "pushdelete` to delete.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+        }
+
+        //send embed
+        message.channel.send("Processing...")
+        .then(m => {        
+            //create push
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "description" : rawSplit[5]};
+            if (!verifyJson(pJson)) {
+                message.channel.send("Push could not be saved. Please try again.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+            pushes[message.channel.id] = pJson;
+            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+            //make embed
+            var embed = createPushEmbed(message.channel.id);
+
+            m.edit(embed); //message.channel.fetchMessage(m.id)
+        })
+        .catch(err => console.log(err));
+
+    },
+    pushdelete: function(message) {
+        if (!message.member.roles.find("name", "Empire Leadership")) {
+            message.channel.send("You require the Empire Leadership role to delete a push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        for (p in pushes) {
+            if (p == message.channel.id) {
+                delete pushes[p];
+                message.channel.send("Push deleted.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                return;
+            }
+        }
+
+        message.channel.send("Could not find a push in this channel.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+    },
+    signup: function(message) {
+
+    },
+    clearsignup: function(message) {
+
+    },
+    in: function(message) {
+
+    },
+    out: function(message) {
+
+    },
+
     //fun
     cat: function(message) {
         if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
             return;
         }
-        Promise.all([httpRequest("http", "random.cat", "/meow")]).then(values => { 
+        Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
             catJson = JSON.parse(values[0]);
             message.channel.send(catJson.file);
         });
@@ -678,4 +777,26 @@ function verifyJson(json) {
         return false;
     }
     return true;
+}
+function createPushEmbed(id) {
+    var pInfo = pushes[id];
+    var commands = '`' + PREFIX + 'signup AccountName` \n' +
+        '`' + PREFIX + 'clearsignup AccountName` *(Leaders only)* \n' +
+        '`' + PREFIX + 'updateslots Number` *(Leaders only)* \n' +
+        '`' + PREFIX + 'in` \n' +
+        '`' + PREFIX + 'out` \n';
+
+    var embed = new Discord.RichEmbed()
+        .setAuthor(pInfo["channel name"], bot.user.avatarURL)
+        .addField("Description", pInfo["description"])
+        .addField("Instructions", PUSHINSTRUCTIONS)
+        .addField("Available Slots", pInfo["slots"])
+        .addField("Ending Date", pInfo["ending date"])
+        .addField("Invites Needed", "*none*")
+        .addField("Commands", commands)
+        .setColor(0xE74C3C)
+        .setFooter("Message Level with any bug reports")
+        .setThumbnail(bot.user.avatarURL)
+
+    return embed;
 }
