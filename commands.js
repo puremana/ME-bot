@@ -638,7 +638,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "description" : rawSplit[5]};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "description" : rawSplit[5], "invites" : [], "currently" : []};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -651,7 +651,7 @@ exports.functions = {
             //make embed
             var embed = createPushEmbed(message.channel.id);
 
-            m.edit(embed); //message.channel.fetchMessage(m.id)
+            m.edit(embed);
         })
         .catch(err => console.log(err));
 
@@ -680,7 +680,21 @@ exports.functions = {
             .catch(err => console.log(err));
     },
     signup: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
 
+            return;
+        }
+        var text = message.content.substring(PREFIX.length + 7);
+        pushes[message.channel.id]["invites"].push(text)
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        rewriteEmbed(message);
+
+        message.channel.send("Username " + text + " has been added to the invite list.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
     },
     clearsignup: function(message) {
 
@@ -778,6 +792,16 @@ function verifyJson(json) {
     }
     return true;
 }
+
+function rewriteEmbed(message) {
+    var id = message.channel.id;
+    var embed = createPushEmbed(id);
+    var msg = message.channel.fetchMessage(pushes[id]["messageid"])
+        .then(m => {
+            m.edit(embed);
+        })
+        .catch(console.error);
+}
 function createPushEmbed(id) {
     var pInfo = pushes[id];
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
@@ -786,13 +810,30 @@ function createPushEmbed(id) {
         '`' + PREFIX + 'in` \n' +
         '`' + PREFIX + 'out` \n';
 
+    var invites = "*none*";
+    if (pushes[id]["invites"].length != 0) {
+        invites = "";
+        for (invite in pushes[id]["invites"]) {
+            invites += pushes[id]["invites"][invite] + "\n";
+        }
+    }
+
+    var currently = "*none*";
+    if (pushes[id]["currently"].length != 0) {
+        currently = "";
+        for (current in pushes[id]["currently"]) {
+            currently += pushes[id]["currently"][current] + "\n";
+        }
+    }
+
     var embed = new Discord.RichEmbed()
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
-        .addField("Available Slots", pInfo["slots"])
         .addField("Ending Date", pInfo["ending date"])
-        .addField("Invites Needed", "*none*")
+        .addField("Available Slots", pInfo["slots"])
+        .addField("Pushing Currently", currently)
+        .addField("Invites Needed", invites)
         .addField("Commands", commands)
         .setColor(0xE74C3C)
         .setFooter("Message Level with any bug reports")
