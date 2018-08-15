@@ -596,6 +596,47 @@ exports.functions = {
         }
     },
 
+    //weeklies
+    weekliesadd: function(message) {
+        //check we're in a text channel
+        if (message.channel.type == "dm") {
+            return;
+        }
+        //check doesn't already have weeklies role
+        if (message.member.roles.find("name", "Weeklies")) {
+            message.channel.send("You already have the weeklies role. Use `" + PREFIX + "weekliesremove` to remove it.")
+                .then(m => m.delete(BINGOTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+        //add the role
+        var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
+        message.channel.send("Your weeklies role has been added.")
+            .then(m => m.delete(BINGOTIMEOUT))
+            .catch(err => console.log(err));
+        message.member.addRole(weekliesRole, "Command issued.");
+    },
+    weekliesremove: function(message) {
+        //check we're in dm channel
+        if (message.channel.type == "dm") {
+            return;
+        }
+        //check they have the bingo role
+        if (message.member.roles.find("name", "Weeklies")) {
+            //remove the role
+            var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
+            message.channel.send("Your weeklies role has been removed.")
+                .then(m => m.delete(BINGOTIMEOUT))
+                .catch(err => console.log(err));
+            message.member.removeRole(weekliesRole, "Command issued.");
+        }
+        else {
+            message.channel.send("You don't have the weeklies role. Use `" + PREFIX + "weekliesadd` to get it.")
+                .then(m => m.delete(BINGOTIMEOUT))
+                .catch(err => console.log(err));
+        }
+    },
+
     //push
     pushsetup: function(message) {
         if (!message.member.roles.find("name", "Empire Leadership")) {
@@ -697,6 +738,9 @@ exports.functions = {
             .catch(err => console.log(err));
     },
     clearsignup: function(message) {
+
+    },
+    resetslots: function(message) {
 
     },
     in: function(message) {
