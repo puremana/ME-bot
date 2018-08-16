@@ -650,8 +650,8 @@ exports.functions = {
         var rawSplit = message.content.split("\"");
 
         //correct format
-        if (rawSplit.length != 7) {
-            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "push description"`')
+        if (rawSplit.length != 9) {
+            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "leader role name" "push description"`')
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -679,7 +679,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "description" : rawSplit[5], "invites" : [], "currently" : []};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : []};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -738,6 +738,81 @@ exports.functions = {
             .catch(err => console.log(err));
     },
     clearsignup: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var text = message.content.substring(PREFIX.length + 12);
+        for (name in pushes[message.channel.id]["invites"]) {
+
+            if (pushes[message.channel.id]["invites"][name] === text) {
+                pushes[message.channel.id]["invites"].splice(name, 1);
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+                rewriteEmbed(message);
+
+                message.channel.send("Username " + text + " has been removed from the invite list.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+
+                return;
+            }
+        }
+        message.channel.send("Could not find a username " + text + " in the invite list.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+    },
+    cleartopsignups: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var num = message.content.substring(PREFIX.length + 16);
+        console.log("j" + num + "j")
+
+
+        if (isNaN(num)) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "cleartopsignups NumberOfPeopleToDelete`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (num > pushes[message.channel.id]["invites"].length) {
+            num = pushes[message.channel.id]["invites"].length;
+        }
+
+        pushes[message.channel.id]["invites"].splice(0, num);
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+        rewriteEmbed(message);
+
+        message.channel.send(num + " usernames have been removed from the invite list.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
 
     },
     resetslots: function(message) {
@@ -849,8 +924,9 @@ function rewriteEmbed(message) {
 function createPushEmbed(id) {
     var pInfo = pushes[id];
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
-        '`' + PREFIX + 'clearsignup AccountName` *(Leaders only)* \n' +
-        '`' + PREFIX + 'updateslots Number` *(Leaders only)* \n' +
+        '`' + PREFIX + 'clearsignup AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
+        '`' + PREFIX + 'cleartopsignups NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
+        '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
         '`' + PREFIX + 'in` \n' +
         '`' + PREFIX + 'out` \n';
 
