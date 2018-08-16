@@ -267,7 +267,7 @@ exports.functions = {
         //if there is already a poll with this name
         for (v in votes) {
             if (v == rawSplit[1]) {
-                message.channel.send("There is already a poll with the name **" + rawSplit[1] + "**. Please `?voteclose` it before recreating.");
+                message.channel.send("There is already a poll with the name **" + rawSplit[1] + "**. Please `" + PREFIX + "voteclose` it before recreating.");
                 return;
             }
         }
@@ -317,7 +317,7 @@ exports.functions = {
                     }
                 }
                 if (numVotes <= count) {
-                    message.channel.send(':negative_squared_cross_mark: Already voted, please use `?votereset "poll name"` before trying again.');
+                    message.channel.send(':negative_squared_cross_mark: Already voted, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
                     return;
                 }
                 //check the poll isn't closed already
@@ -328,7 +328,7 @@ exports.functions = {
                 //check number of votes they are doing is less than what's in there
                 var messageVotes = (rawSplit.count - 2) / 2;
                 if ((messageVotes + count) > numVotes) {
-                    message.channel.send(':negative_squared_cross_mark: Trying to enter too many votes, please use `?votereset "poll name"` before trying again.');
+                    message.channel.send(':negative_squared_cross_mark: Trying to enter too many votes, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
                     return;
                 }
                 //if they haven't put their vote or votes in 
@@ -679,7 +679,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : []};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : {}};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -755,7 +755,6 @@ exports.functions = {
 
         var text = message.content.substring(PREFIX.length + 12);
         for (name in pushes[message.channel.id]["invites"]) {
-
             if (pushes[message.channel.id]["invites"][name] === text) {
                 pushes[message.channel.id]["invites"].splice(name, 1);
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
@@ -790,8 +789,6 @@ exports.functions = {
         }
 
         var num = message.content.substring(PREFIX.length + 16);
-        console.log("j" + num + "j")
-
 
         if (isNaN(num)) {
             message.channel.send("Please use this command in the following format `" + PREFIX + "cleartopsignups NumberOfPeopleToDelete`")
@@ -815,14 +812,96 @@ exports.functions = {
             .catch(err => console.log(err));
 
     },
-    resetslots: function(message) {
+    updateslots: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
 
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var num = message.content.substring(PREFIX.length + 12);
+
+        if (isNaN(num)) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "updateslots NumberOfSlots`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        //empty array
+        pushes[message.channel.id]["currently"] = [];
+        
+        //update slots
+        pushes[message.channel.id]["slots"] = num;
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+        rewriteEmbed(message);
+
+        message.channel.send("Available guild spots have been updated.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+
+        return;
     },
     in: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
 
+            return;
+        }
+
+        if (pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
+            message.channel.send("User ID is already currently pushing.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        pushes[message.channel.id]["currently"][message.author.id] = message.author.username;
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        rewriteEmbed(message);
+
+        message.channel.send("Username " + message.author.username + " has entered the guild.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
     },
     out: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
 
+            return;
+        }
+
+        if (!pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
+            message.channel.send("Could not find user ID currently pushing.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        delete pushes[message.channel.id]["currently"][message.author.id];
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        rewriteEmbed(message);
+
+        message.channel.send("Username " + message.author.username + " has exited the guild.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
     },
 
     //fun
@@ -939,19 +1018,21 @@ function createPushEmbed(id) {
     }
 
     var currently = "*none*";
-    if (pushes[id]["currently"].length != 0) {
+    if (Object.keys(pushes[id]["currently"]).length != 0) {
         currently = "";
         for (current in pushes[id]["currently"]) {
             currently += pushes[id]["currently"][current] + "\n";
         }
     }
 
+    var aSlots = pInfo["slots"] - Object.keys(pushes[id]["currently"]).length;
+
     var embed = new Discord.RichEmbed()
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
         .addField("Ending Date", pInfo["ending date"])
-        .addField("Available Slots", pInfo["slots"])
+        .addField("Available Slots", aSlots)
         .addField("Pushing Currently", currently)
         .addField("Invites Needed", invites)
         .addField("Commands", commands)
