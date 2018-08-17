@@ -4,7 +4,7 @@ var customCommands = require('./storage/custom.json');
 var votes = require('./storage/votes.json');
 var pushes = require('./storage/pushes.json');
 const BOTNAME = "Empire Ruler";
-var PREFIX = "?";
+var PREFIX = "$";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n";
 var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 var boolFunCommands = true;
@@ -68,6 +68,7 @@ exports.functions = {
     help: function(message) {
         var showingRoles = "";
         var additionalBot = "";
+        var pushCommands = "";
     
         if (message.member != null) {
             if (message.member.roles.find("name", "Empire Leadership")) {
@@ -75,6 +76,8 @@ exports.functions = {
                 additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                 PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                 additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
+                pushcommands += PREFIX + 'pushsetup "available slots" "push end date" "leader role name" "push description" \n' +
+                PREFIX + 'pushdelete \n';
             }
             else {
                 showingRoles = "Member";
@@ -109,6 +112,13 @@ exports.functions = {
         PREFIX + 'votedelete - `' + PREFIX + 'votedelete "Name of Poll"` \n' +
         PREFIX + 'votereset - `' + PREFIX + 'votereset "Name of Poll"` \n';
 
+        pushCommands += PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
+        PREFIX + "clearsignup - `" + PREFIX + "clearsingup AccountName` *(Leaders only)* \n" + 
+        PREFIX + "cleartopsignups - `" + PREFIX + "cleartopsignups NumberOfPeopleToDelete` *(Leaders only)* \n" +
+        PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
+        PREFIX + "in \n" +
+        PREFIX + "out";
+
         var eventCommands = PREFIX + "invasion \n" + 
         PREFIX + "energyevent \n" + 
         PREFIX + "rpg \n" + 
@@ -134,6 +144,7 @@ exports.functions = {
         .addField("Voting Commands", votingCommands)
         .addField("Event Commands", eventCommands, true)
         .addField("Useful Links", usefulLinks, true)
+        .addField("Push Commands", pushCommands)
         .setColor(0x9B59B6)
         if (customP == "") {
             embed.addField("Custom Commands", "There are no custom commands to display.", true)
@@ -639,7 +650,7 @@ exports.functions = {
 
     //push
     pushsetup: function(message) {
-        if (!message.member.roles.find("name", "Empire Leadership")) {
+        if (!(message.member.roles.find("name", "Empire Leadership") || (message.author.id == "146412379633221632"))) {
             message.channel.send("You require the Empire Leadership role to create a push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -698,7 +709,7 @@ exports.functions = {
 
     },
     pushdelete: function(message) {
-        if (!message.member.roles.find("name", "Empire Leadership")) {
+        if (!(message.member.roles.find("name", "Empire Leadership") || (message.author.id == "146412379633221632"))) {
             message.channel.send("You require the Empire Leadership role to delete a push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -707,6 +718,8 @@ exports.functions = {
 
         for (p in pushes) {
             if (p == message.channel.id) {
+                deleteEmbed(message);
+
                 delete pushes[p];
                 message.channel.send("Push deleted.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -863,7 +876,7 @@ exports.functions = {
         }
 
         if (pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
-            message.channel.send("User ID is already currently pushing.")
+            message.channel.send("Discord ID is already currently pushing.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
 
@@ -874,7 +887,7 @@ exports.functions = {
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
         rewriteEmbed(message);
 
-        message.channel.send("Username " + message.author.username + " has entered the guild.")
+        message.channel.send("Discord username " + message.author.username + " has entered the guild.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
     },
@@ -888,7 +901,7 @@ exports.functions = {
         }
 
         if (!pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
-            message.channel.send("Could not find user ID currently pushing.")
+            message.channel.send("Could not find Discord ID currently pushing.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
 
@@ -899,7 +912,7 @@ exports.functions = {
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
         rewriteEmbed(message);
 
-        message.channel.send("Username " + message.author.username + " has exited the guild.")
+        message.channel.send("Discord username " + message.author.username + " has exited the guild.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
     },
@@ -997,6 +1010,14 @@ function rewriteEmbed(message) {
     var msg = message.channel.fetchMessage(pushes[id]["messageid"])
         .then(m => {
             m.edit(embed);
+        })
+        .catch(console.error);
+}
+function deleteEmbed(message) {
+    var id = message.channel.id;
+    var msg = message.channel.fetchMessage(pushes[id]["messageid"])
+        .then(m => {
+            m.delete();
         })
         .catch(console.error);
 }
