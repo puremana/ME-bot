@@ -113,8 +113,8 @@ exports.functions = {
         PREFIX + 'votereset - `' + PREFIX + 'votereset "Name of Poll"` \n';
 
         pushCommands += PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
-        PREFIX + "clearsignup - `" + PREFIX + "clearsingup AccountName` *(Leaders only)* \n" + 
-        PREFIX + "cleartopsignups - `" + PREFIX + "cleartopsignups NumberOfPeopleToDelete` *(Leaders only)* \n" +
+        PREFIX + " - `" + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
+        PREFIX + "senttop - `" + PREFIX + "senttop NumberOfPeopleToDelete` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
         PREFIX + "in \n" +
         PREFIX + "out";
@@ -742,6 +742,24 @@ exports.functions = {
             return;
         }
         var text = message.content.substring(PREFIX.length + 7);
+
+        for (name in pushes[message.channel.id]["invites"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["invites"][name].toLowerCase()) {
+                message.channel.send("Username " + text + " is already on the invite list.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+        }
+
+        if (!text.replace(/\s/g, '').length) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "signup AccountName`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
         pushes[message.channel.id]["invites"].push(text)
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
         rewriteEmbed(message);
@@ -750,7 +768,7 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
     },
-    clearsignup: function(message) {
+    sent: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             message.channel.send("Could not find a push in this channel.")
                 .then(m => m.delete(PUSHTIMEOUT))
@@ -785,7 +803,7 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
     },
-    cleartopsignups: function(message) {
+    senttop: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             message.channel.send("Could not find a push in this channel.")
                 .then(m => m.delete(PUSHTIMEOUT))
@@ -804,7 +822,7 @@ exports.functions = {
         var num = message.content.substring(PREFIX.length + 16);
 
         if (isNaN(num)) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "cleartopsignups NumberOfPeopleToDelete`")
+            message.channel.send("Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
 
@@ -1024,8 +1042,8 @@ function deleteEmbed(message) {
 function createPushEmbed(id) {
     var pInfo = pushes[id];
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
-        '`' + PREFIX + 'clearsignup AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
-        '`' + PREFIX + 'cleartopsignups NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
+        '`' + PREFIX + 'sent AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
+        '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
         '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
         '`' + PREFIX + 'in` \n' +
         '`' + PREFIX + 'out` \n';
@@ -1047,13 +1065,18 @@ function createPushEmbed(id) {
     }
 
     var aSlots = pInfo["slots"] - Object.keys(pushes[id]["currently"]).length;
+    var sSlots = aSlots;
+
+    if (aSlots < 1) {
+        sSlots = "Full (" + aSlots + ")";
+    }
 
     var embed = new Discord.RichEmbed()
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
         .addField("Ending Date", pInfo["ending date"])
-        .addField("Available Slots", aSlots)
+        .addField("Available Slots", sSlots)
         .addField("Pushing Currently", currently)
         .addField("Invites Needed", invites)
         .addField("Commands", commands)

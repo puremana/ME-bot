@@ -27,8 +27,8 @@ rule.minute = 50;
 rule.tz = 'America/Atikokan';
 
 var bingoFunction = schedule.scheduleJob(rule, function(){
-    var bingoRole = bot.guilds.find("id", serverID).roles.find("name", "bingo");
-    bot.guilds.find("id", serverID).channels.find("name", "bingo").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
+    var bingoRole = bot.guilds.find("id", serverID).roles.find("name", "Bingo!!");
+    bot.guilds.find("id", serverID).channels.find("name", "Bingo!!").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
 bot.on("ready", function() {
@@ -69,7 +69,9 @@ try {
                 deleteMessage(message);
                 return;
             }
-            message.channel.send("Invalid command, type **" + PREFIX + "help** to get current list of commands");
+            message.channel.send("Invalid command, type **" + PREFIX + "help** to get current list of commands")
+                .then(m => m.delete(TIMEOUT * 10))
+                .catch(err => console.log(err));
         }
         deleteMessage(message);
     });
