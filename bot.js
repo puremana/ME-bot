@@ -9,7 +9,7 @@ const PREFIX = "$";
 const questionRegex = /^[$]+$/;
 const TOKEN = config.token;
 const TIMEOUT = 1500;
-const serverID = "146007387466235905";
+const serverID = "355227226389872641";
 
 //Load Bot - loop through functions in commands and add to hashmap
 var hashArray = [];
@@ -28,7 +28,7 @@ rule.tz = 'America/Atikokan';
 
 var bingoFunction = schedule.scheduleJob(rule, function(){
     var bingoRole = bot.guilds.find("id", serverID).roles.find("name", "Bingo!!");
-    bot.guilds.find("id", serverID).channels.find("name", "Bingo!!").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
+    bot.guilds.find("id", serverID).channels.find("name", "me-general").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
 bot.on("ready", function() {

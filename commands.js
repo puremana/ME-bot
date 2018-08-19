@@ -15,6 +15,7 @@ const FUNCHANNELID = "355227226389872642";
 const BINGOTIMEOUT = 5000;
 const PUSHTIMEOUT = 15000;
 const PUSHINSTRUCTIONS = "Signup using the `" + PREFIX + "signup AccountName` command. Use `" + PREFIX + "in` when you enter and `" + PREFIX + "out` when you leave.";
+const serverID = "355227226389872641";
 
 exports.setters = {
     setBot: function(theBot) {
@@ -704,6 +705,7 @@ exports.functions = {
             var embed = createPushEmbed(message.channel.id);
 
             m.edit(embed);
+            log("<@" + message.author.id + "> has created a new push in channel " + message.guild.channels.get(message.channel.id).toString());
         })
         .catch(err => console.log(err));
 
@@ -725,6 +727,7 @@ exports.functions = {
                     .then(m => m.delete(PUSHTIMEOUT))
                     .catch(err => console.log(err));
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                log("<@" + message.author.id + "> has deleted a push in channel " + message.guild.channels.get(message.channel.id).toString());
                 return;
             }
         }
@@ -756,7 +759,6 @@ exports.functions = {
             message.channel.send("Please use this command in the following format `" + PREFIX + "signup AccountName`")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
-
             return;
         }
 
@@ -767,6 +769,7 @@ exports.functions = {
         message.channel.send("Username " + text + " has been added to the invite list.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
+        log("<@" + message.author.id + "> has signed up in with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     sent: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -795,7 +798,7 @@ exports.functions = {
                 message.channel.send("Username " + text + " has been removed from the invite list.")
                     .then(m => m.delete(PUSHTIMEOUT))
                     .catch(err => console.log(err));
-
+                log("<@" + message.author.id + "> has sent an invite to username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
                 return;
             }
         }
@@ -841,7 +844,7 @@ exports.functions = {
         message.channel.send(num + " usernames have been removed from the invite list.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
-
+        log("<@" + message.author.id + "> has invited **" + num + " players** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     updateslots: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -881,8 +884,7 @@ exports.functions = {
         message.channel.send("Available guild spots have been updated.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
-
-        return;
+        log("<@" + message.author.id + "> has updated slots to **" + num + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     in: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -901,6 +903,8 @@ exports.functions = {
             return;
         }
 
+        var text = message.content.substring(PREFIX.length + 3);
+
         pushes[message.channel.id]["currently"][message.author.id] = message.author.username;
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
         rewriteEmbed(message);
@@ -908,6 +912,7 @@ exports.functions = {
         message.channel.send("Discord username " + message.author.username + " has entered the guild.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
+        log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     out: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -933,6 +938,7 @@ exports.functions = {
         message.channel.send("Discord username " + message.author.username + " has exited the guild.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
+        log("<@" + message.author.id + "> has exited the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
 
     //fun
@@ -1085,4 +1091,7 @@ function createPushEmbed(id) {
         .setThumbnail(bot.user.avatarURL)
 
     return embed;
-}
+    }
+    function log(text) {
+        bot.guilds.find("id", serverID).channels.find("name", "push-log").send(text);
+    }
