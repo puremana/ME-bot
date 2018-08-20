@@ -691,7 +691,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : {}};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : {}, "queue" : {}};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -744,10 +744,11 @@ exports.functions = {
 
             return;
         }
+
         var text = message.content.substring(PREFIX.length + 7);
 
         for (name in pushes[message.channel.id]["invites"]) {
-            if (text.toLowerCase() === pushes[message.channel.id]["invites"][name].toLowerCase()) {
+            if (text.toLowerCase() === pushes[message.channel.id]["invites"][name]["name"].toLowerCase()) {
                 message.channel.send("Username " + text + " is already on the invite list.")
                     .then(m => m.delete(PUSHTIMEOUT))
                     .catch(err => console.log(err));
@@ -762,7 +763,7 @@ exports.functions = {
             return;
         }
 
-        pushes[message.channel.id]["invites"].push(text)
+        pushes[message.channel.id]["invites"].push({id : message.author.id, name : text});
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
         rewriteEmbed(message);
 
@@ -787,24 +788,32 @@ exports.functions = {
             return;
         }
 
-        var text = message.content.substring(PREFIX.length + 12);
+        var text = message.content.substring(PREFIX.length + 5);
+
         for (name in pushes[message.channel.id]["invites"]) {
-            if (pushes[message.channel.id]["invites"][name] === text) {
+            if (text.toLowerCase() === pushes[message.channel.id]["invites"][name]["name"].toLowerCase()) {
+                
+                var userid = pushes[message.channel.id]["invites"][name]["id"];
+
                 pushes[message.channel.id]["invites"].splice(name, 1);
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
 
                 rewriteEmbed(message);
 
-                message.channel.send("Username " + text + " has been removed from the invite list.")
-                    .then(m => m.delete(PUSHTIMEOUT))
+                message.channel.send("Username **" + text + "** has been sent an invite - <@" + userid + ">")
+                    .then(m => m.delete(PUSHTIMEOUT * 10))
                     .catch(err => console.log(err));
-                log("<@" + message.author.id + "> has sent an invite to username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                log("<@" + message.author.id + "> has sent an invite to Discord username <@" + userid + "> , account username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                return;
+
                 return;
             }
         }
+        
         message.channel.send("Could not find a username " + text + " in the invite list.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
+        
     },
     senttop: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -822,7 +831,14 @@ exports.functions = {
             return;
         }
 
-        var num = message.content.substring(PREFIX.length + 16);
+        var num = message.content.substring(PREFIX.length + 8);
+
+        if (!num.replace(/\s/g, '').length) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
 
         if (isNaN(num)) {
             message.channel.send("Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`")
@@ -836,15 +852,20 @@ exports.functions = {
             num = pushes[message.channel.id]["invites"].length;
         }
 
+        var tagText = "";
+        for (i= 0; i < num; i++) {
+            tagText += "Account name: **" + pushes[message.channel.id]["invites"][i]["name"] + "**, Discord account: <@" + pushes[message.channel.id]["invites"][i]["id"] + "> \n";
+        }
+
         pushes[message.channel.id]["invites"].splice(0, num);
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
 
         rewriteEmbed(message);
 
-        message.channel.send(num + " usernames have been removed from the invite list.")
-            .then(m => m.delete(PUSHTIMEOUT))
+        message.channel.send(num + " usernames have been sent an invite. \n" + tagText)
+            .then(m => m.delete(PUSHTIMEOUT * 10))
             .catch(err => console.log(err));
-        log("<@" + message.author.id + "> has invited **" + num + " players** in channel " + message.guild.channels.get(message.channel.id).toString());
+        log("<@" + message.author.id + "> has invited **" + num + " players** \n" + tagText + "\nIn channel " + message.guild.channels.get(message.channel.id).toString());
     },
     updateslots: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -1051,14 +1072,14 @@ function createPushEmbed(id) {
         '`' + PREFIX + 'sent AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
         '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
         '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
-        '`' + PREFIX + 'in` \n' +
-        '`' + PREFIX + 'out` \n';
+        '`' + PREFIX + 'in AccountName` \n' +
+        '`' + PREFIX + 'out AccountName` \n';
 
     var invites = "*none*";
     if (pushes[id]["invites"].length != 0) {
         invites = "";
         for (invite in pushes[id]["invites"]) {
-            invites += pushes[id]["invites"][invite] + "\n";
+            invites += pushes[id]["invites"][invite]["name"] + "\n";
         }
     }
 
@@ -1083,8 +1104,8 @@ function createPushEmbed(id) {
         .addField("Instructions", PUSHINSTRUCTIONS)
         .addField("Ending Date", pInfo["ending date"])
         .addField("Available Slots", sSlots)
-        .addField("Pushing Currently", currently)
         .addField("Invites Needed", invites)
+        .addField("Pushing Currently", currently)
         .addField("Commands", commands)
         .setColor(0xE74C3C)
         .setFooter("Message Level with any bug reports")
