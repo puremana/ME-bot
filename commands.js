@@ -871,8 +871,6 @@ exports.functions = {
 
         for (name in pushes[message.channel.id]["queue"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
-                
-                var userid = pushes[message.channel.id]["queue"][name]["id"];
 
                 pushes[message.channel.id]["queue"].splice(name, 1);
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
@@ -1032,24 +1030,49 @@ exports.functions = {
             return;
         }
 
-        if (pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
-            message.channel.send("Discord ID is already currently pushing.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
-            return;
-        }
-
         var text = message.content.substring(PREFIX.length + 3);
 
-        pushes[message.channel.id]["currently"][message.author.id] = message.author.username;
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
-        rewriteEmbed(message);
+        for (name in pushes[message.channel.id]["queue"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
 
-        message.channel.send("Discord username " + message.author.username + " has entered the guild.")
+                //make sure it was same person who made
+                var userid = pushes[message.channel.id]["queue"][name]["id"];
+
+                if (userid != message.author.id) {
+                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    return;
+                }
+
+                //if it is the one who is ready
+                if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
+        
+                    //add to current push list
+                    pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
+                    //delete from queue
+                    pushes[message.channel.id]["queue"].splice(name, 1);
+
+                    fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                    rewriteEmbed(message);
+
+                    message.channel.send("Account name **" + text + "** has entered the guild.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                    return;
+                } 
+                else {
+                    message.channel.send("Account name **" + text + "** is not at the top of the queue.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    return;
+                }
+            }
+        }
+        message.channel.send("Could not find account name **" + text + "** in the queue.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
-        log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     out: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -1060,23 +1083,37 @@ exports.functions = {
             return;
         }
 
-        if (!pushes[message.channel.id]["currently"].hasOwnProperty(message.author.id)) {
-            message.channel.send("Could not find Discord ID currently pushing.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+        var text = message.content.substring(PREFIX.length + 4);
 
-            return;
+        for (name in pushes[message.channel.id]["currently"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["currently"][name]["name"].toLowerCase()) {
+
+                var userid = pushes[message.channel.id]["queue"][name]["id"];
+
+                if (userid != message.author.id) {
+                    message.channel.send("Username **" + text + "** was added to the current push by a different Discord user.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    return;
+                }
+                    
+                pushes[message.channel.id]["currently"].splice(name, 1);
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                rewriteEmbed(message);
+        
+                message.channel.send("Account name **" + text + "** has exited the guild.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                log("<@" + message.author.id + "> has exited the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                
+                checkQueue(message);
+                return;
+            }
         }
-
-        delete pushes[message.channel.id]["currently"][message.author.id];
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
-        rewriteEmbed(message);
-
-        message.channel.send("Discord username " + message.author.username + " has exited the guild.")
+        message.channel.send("Could not find account name **" + text + "** in the queue.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
-        log("<@" + message.author.id + "> has exited the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-    },
+       },
 
     //fun
     cat: function(message) {
@@ -1207,7 +1244,7 @@ function createPushEmbed(id) {
     if (Object.keys(pushes[id]["currently"]).length != 0) {
         currently = "";
         for (current in pushes[id]["currently"]) {
-            currently += pushes[id]["currently"][current] + "\n";
+            currently += pushes[id]["currently"][current]["name"] + "\n";
         }
     }
 
