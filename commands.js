@@ -113,11 +113,14 @@ exports.functions = {
         PREFIX + 'votedelete - `' + PREFIX + 'votedelete "Name of Poll"` \n' +
         PREFIX + 'votereset - `' + PREFIX + 'votereset "Name of Poll"` \n';
 
-        pushCommands += PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
-        PREFIX + " - `" + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
+        pushCommands += PREFIX + "sent - " + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
         PREFIX + "senttop - `" + PREFIX + "senttop NumberOfPeopleToDelete` *(Leaders only)* \n" +
+        PREFIX + "queueremove - `" + PREFIX + "queueremove AccountName` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
-        PREFIX + "in - `" + PREFIX + "int AccountName` \n" + 
+        PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
+        PREFIX + "queuejoin - `" + PREFIX + "queuejoin AccountName` \n" + 
+        PREFIX + "queueleave - `" + PREFIX + "queueleave AccountName` \n" + 
+        PREFIX + "in - `" + PREFIX + "in AccountName` \n" + 
         PREFIX + "out - `" + PREFIX + "out AccountName`";
 
         var eventCommands = PREFIX + "invasion \n" + 
@@ -805,9 +808,8 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
         log("<@" + message.author.id + "> has joined the queue with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-    
 
-        if (Object.keys(pushes[id]["queue"]).length === 1) {
+        if (Object.keys(pushes[message.channel.id]["queue"]).length =< pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
             checkQueue(message);
         }
     },
@@ -1052,6 +1054,12 @@ exports.functions = {
                     pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
                     //delete from queue
                     pushes[message.channel.id]["queue"].splice(name, 1);
+                    //if on invite list, delete
+                    for (person in pushes[message.channel.id]["invites"]) {
+                        if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
+                            pushes[message.channel.id]["invites"].splice(person, 1);
+                        }
+                    }
 
                     fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
                     rewriteEmbed(message);
@@ -1088,7 +1096,7 @@ exports.functions = {
         for (name in pushes[message.channel.id]["currently"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["currently"][name]["name"].toLowerCase()) {
 
-                var userid = pushes[message.channel.id]["queue"][name]["id"];
+                var userid = pushes[message.channel.id]["currently"][name]["id"];
 
                 if (userid != message.author.id) {
                     message.channel.send("Username **" + text + "** was added to the current push by a different Discord user.")
@@ -1110,10 +1118,48 @@ exports.functions = {
                 return;
             }
         }
-        message.channel.send("Could not find account name **" + text + "** in the queue.")
+        message.channel.send("Could not find account name **" + text + "** in the push.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
-       },
+    },
+    currentremove: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var text = message.content.substring(PREFIX.length + 14);
+
+        for (name in pushes[message.channel.id]["currently"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["currently"][name]["name"].toLowerCase()) {
+                    
+                pushes[message.channel.id]["currently"].splice(name, 1);
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                rewriteEmbed(message);
+        
+                message.channel.send("Account name **" + text + "** has been removed from the guild.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                log("<@" + message.author.id + "> has removed account name **" + text + "** from the guild in channel " + message.guild.channels.get(message.channel.id).toString());
+                
+                checkQueue(message);
+                return;
+            }
+        }
+        message.channel.send("Could not find account name **" + text + "** in the push.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+    },
 
     //fun
     cat: function(message) {
@@ -1224,7 +1270,8 @@ function createPushEmbed(id) {
     var leaderCommands = '`' + PREFIX + 'sent AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'queueremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
-    '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)*';
+    '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)*';
 
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
         '`' + PREFIX + 'queuejoin AccountName` \n' +
