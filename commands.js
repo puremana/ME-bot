@@ -14,7 +14,7 @@ const CHALLENGECHANNELID = "";
 const FUNCHANNELID = "355227226389872642";
 const BINGOTIMEOUT = 5000;
 const PUSHTIMEOUT = 15000;
-const PUSHINSTRUCTIONS = "Signup using the `" + PREFIX + "signup AccountName` command. Use `" + PREFIX + "in` when you enter and `" + PREFIX + "out` when you leave.";
+const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
 const serverID = "355227226389872641";
 
 exports.setters = {
@@ -117,8 +117,8 @@ exports.functions = {
         PREFIX + " - `" + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
         PREFIX + "senttop - `" + PREFIX + "senttop NumberOfPeopleToDelete` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
-        PREFIX + "in \n" +
-        PREFIX + "out";
+        PREFIX + "in - `" + PREFIX + "int AccountName` \n" + 
+        PREFIX + "out - `" + PREFIX + "out AccountName`";
 
         var eventCommands = PREFIX + "invasion \n" + 
         PREFIX + "energyevent \n" + 
@@ -691,7 +691,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : {}, "queue" : {}};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : [], "queue" : []};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -741,7 +741,6 @@ exports.functions = {
             message.channel.send("Could not find a push in this channel.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
-
             return;
         }
 
@@ -771,6 +770,52 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
         log("<@" + message.author.id + "> has signed up in with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+    },
+    queuejoin: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var text = message.content.substring(PREFIX.length + 10);
+
+        for (name in pushes[message.channel.id]["queue"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
+                message.channel.send("Username " + text + " is already in the queue.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+        }
+
+        if (!text.replace(/\s/g, '').length) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "queuejoin AccountName`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        pushes[message.channel.id]["queue"].push({id : message.author.id, name : text});
+        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        rewriteEmbed(message);
+
+        message.channel.send("Username " + text + " has been added to the queue.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+        log("<@" + message.author.id + "> has joined the queue with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+    
+
+        if (Object.keys(pushes[id]["queue"]).length === 1) {
+            checkQueue(message);
+        }
+    },
+    queueleave: function(message) {
+
+    },
+    queueremove: function(message) {
+
     },
     sent: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -804,8 +849,6 @@ exports.functions = {
                     .then(m => m.delete(PUSHTIMEOUT * 10))
                     .catch(err => console.log(err));
                 log("<@" + message.author.id + "> has sent an invite to Discord username <@" + userid + "> , account username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-                return;
-
                 return;
             }
         }
@@ -892,9 +935,6 @@ exports.functions = {
 
             return;
         }
-
-        //empty array
-        pushes[message.channel.id]["currently"] = [];
         
         //update slots
         pushes[message.channel.id]["slots"] = num;
@@ -1068,12 +1108,16 @@ function deleteEmbed(message) {
 }
 function createPushEmbed(id) {
     var pInfo = pushes[id];
+    var leaderCommands = '`' + PREFIX + 'sent AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'queueremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)*';
+
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
-        '`' + PREFIX + 'sent AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
-        '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
-        '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
+        '`' + PREFIX + 'queuejoin AccountName` \n' +
+        '`' + PREFIX + 'queueleave AccountName` \n' +
         '`' + PREFIX + 'in AccountName` \n' +
-        '`' + PREFIX + 'out AccountName` \n';
+        '`' + PREFIX + 'out AccountName`';
 
     var invites = "*none*";
     if (pushes[id]["invites"].length != 0) {
@@ -1094,6 +1138,19 @@ function createPushEmbed(id) {
     var aSlots = pInfo["slots"] - Object.keys(pushes[id]["currently"]).length;
     var sSlots = aSlots;
 
+    var queue = "*none*";
+    if (Object.keys(pushes[id]["queue"]).length != 0) {
+        queue = "";
+        for (member in pushes[id]["queue"]) {
+            if (member < sSlots) {
+                queue += pushes[id]["queue"][member]["name"] + " *(Ready for push!)*\n";
+            } else {
+                queue += pushes[id]["queue"][member]["name"] + "\n";
+            }
+            
+        }
+    }
+
     if (aSlots < 1) {
         sSlots = "Full (" + aSlots + ")";
     }
@@ -1105,13 +1162,35 @@ function createPushEmbed(id) {
         .addField("Ending Date", pInfo["ending date"])
         .addField("Available Slots", sSlots)
         .addField("Invites Needed", invites)
+        .addField("Queue", queue)
         .addField("Pushing Currently", currently)
-        .addField("Commands", commands)
+        .addField("Leader Commands", leaderCommands)
+        .addField("Member Commands", commands)
         .setColor(0xE74C3C)
         .setFooter("Message Level with any bug reports")
         .setThumbnail(bot.user.avatarURL)
 
     return embed;
+    }
+    function checkQueue(message) {
+        //ping next people in queue
+        var id = message.channel.id;
+        var sSlots = pushes[id]["slots"] - Object.keys(pushes[id]["currently"]).length;
+        var text = "";
+
+        if (Object.keys(pushes[id]["queue"]).length != 0) {
+            for (member in pushes[id]["queue"]) {
+                if (member < sSlots) {
+                    text += "Account name **" + pushes[id]["queue"][member]["name"] + "** is ready for pushing <@" + pushes[id]["queue"][member]["id"] + ">\n";
+                } 
+            }
+        }
+
+        if (text != "") {
+            message.channel.send(text)
+                .then(m => m.delete(PUSHTIMEOUT * 10))
+                .catch(err => console.log(err));
+        }
     }
     function log(text) {
         bot.guilds.find("id", serverID).channels.find("name", "push-log").send(text);
