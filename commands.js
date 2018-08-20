@@ -9,13 +9,12 @@ const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREF
 var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 var boolFunCommands = true;
 var bot;
-const BINGOCHANNELID = "";
-const CHALLENGECHANNELID = "";
-const FUNCHANNELID = "355227226389872642";
+const CHALLENGECHANNELID = "208561819588100096";
+const FUNCHANNELID = "247004062371807232";
 const BINGOTIMEOUT = 5000;
 const PUSHTIMEOUT = 15000;
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
-const serverID = "355227226389872641";
+const serverID = "208543018385539072";
 
 exports.setters = {
     setBot: function(theBot) {
@@ -572,10 +571,6 @@ exports.functions = {
 
     //bingo
     bingoadd: function(message) {
-        //check we're in bingo channel
-        if (message.channel.id != BINGOCHANNELID) {
-            return;
-        }
         //check doesn't already have bingo role
         if (message.member.roles.find("name", "Bingo!!")) {
             message.channel.send("You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
@@ -591,10 +586,6 @@ exports.functions = {
         message.member.addRole(bingoRole, "Command issued.");
     },
     bingoremove: function(message) {
-        //check we're in bingo channel
-        if (message.channel.id != BINGOCHANNELID) {
-            return;
-        }
         //check they have the bingo role
         if (message.member.roles.find("name", "Bingo!!")) {
             //remove the role

@@ -9,7 +9,7 @@ const PREFIX = "$";
 const questionRegex = /^[$]+$/;
 const TOKEN = config.token;
 const TIMEOUT = 1500;
-const serverID = "355227226389872641";
+const serverID = "208543018385539072";
 
 //Load Bot - loop through functions in commands and add to hashmap
 var hashArray = [];
