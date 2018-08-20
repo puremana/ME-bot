@@ -812,10 +812,86 @@ exports.functions = {
         }
     },
     queueleave: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
 
+        var text = message.content.substring(PREFIX.length + 11);
+
+        for (name in pushes[message.channel.id]["queue"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
+                
+                var userid = pushes[message.channel.id]["queue"][name]["id"];
+
+                if (userid != message.author.id) {
+                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user. If you have the " + pushes[message.channel.id]["leaders"] + " role, please use `" + PREFIX + "queueremove AccountName`.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    return;
+                }
+
+                pushes[message.channel.id]["queue"].splice(name, 1);
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+                rewriteEmbed(message);
+
+                message.channel.send("Username **" + text + "** has been removed from the queue.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                log("<@" + message.author.id + "> has removed account username **" + text + "** from the queue in channel " + message.guild.channels.get(message.channel.id).toString());
+                
+                //if leaving has an effect on who can push
+                if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
+                    checkQueue(message);
+                }
+                
+                return;
+            }
+        }
     },
     queueremove: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
 
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to remove other players from this push queue.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var text = message.content.substring(PREFIX.length + 12);
+
+        for (name in pushes[message.channel.id]["queue"]) {
+            if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
+                
+                var userid = pushes[message.channel.id]["queue"][name]["id"];
+
+                pushes[message.channel.id]["queue"].splice(name, 1);
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+                rewriteEmbed(message);
+
+                message.channel.send("Username **" + text + "** has been removed from the queue.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                log("<@" + message.author.id + "> has removed account username **" + text + "** from the queue in channel " + message.guild.channels.get(message.channel.id).toString());
+                
+                //if leaving has an effect on who can push
+                if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
+                    checkQueue(message);
+                }
+                
+                return;
+            }
+        }
     },
     sent: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
