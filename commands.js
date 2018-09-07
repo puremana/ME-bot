@@ -76,7 +76,7 @@ exports.functions = {
                 additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                 PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                 additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
-                pushcommands += PREFIX + 'pushsetup "available slots" "push end date" "leader role name" "push description" \n' +
+                pushcommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" \n' +
                 PREFIX + 'pushdelete \n';
             }
             else {
@@ -656,8 +656,8 @@ exports.functions = {
         var rawSplit = message.content.split("\"");
 
         //correct format
-        if (rawSplit.length != 9) {
-            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "leader role name" "push description"`')
+        if (rawSplit.length != 11) {
+            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "time limit" "leader role name" "push description"`')
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -666,6 +666,14 @@ exports.functions = {
         //number as argument
         if (isNaN(rawSplit[1])) {
             message.channel.send("Please make sure the first argument (available slots) is a number before creating the poll.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        //number as argument
+        if (isNaN(rawSplit[5])) {
+            message.channel.send("Please make sure the third argument (time per push) is a number (minutes) before creating the poll.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -685,7 +693,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "leaders" : rawSplit[5], "description" : rawSplit[7], "invites" : [], "currently" : [], "queue" : []};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : []};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -800,7 +808,7 @@ exports.functions = {
             .catch(err => console.log(err));
         log("<@" + message.author.id + "> has joined the queue with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
 
-        if (Object.keys(pushes[message.channel.id]["queue"]).length =< pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
+        if (Object.keys(pushes[message.channel.id]["queue"]).length <= pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
             checkQueue(message);
         }
     },
@@ -1059,6 +1067,11 @@ exports.functions = {
                         .then(m => m.delete(PUSHTIMEOUT))
                         .catch(err => console.log(err));
                     log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                    
+                    setTimeout(function() {
+                        pingMember(message, text);
+                    }, pushes[message.channel.id]["push time"] * 60000);
+
                     return;
                 } 
                 else {
@@ -1310,7 +1323,8 @@ function createPushEmbed(id) {
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
-        .addField("Ending Date", pInfo["ending date"])
+        .addField("Ending Date", pInfo["ending date"], true)
+        .addField("Push Time", pInfo["push time"] + " Minutes", true)
         .addField("Available Slots", sSlots)
         .addField("Invites Needed", invites)
         .addField("Queue", queue)
@@ -1345,4 +1359,20 @@ function createPushEmbed(id) {
     }
     function log(text) {
         bot.guilds.find("id", serverID).channels.find("name", "push-log").send(text);
+    }
+    function pingMember(message, name) {
+        //if the member is still in the guild
+        for (user in pushes[message.channel.id]["currently"]) {
+            if (name.toLowerCase() === pushes[message.channel.id]["currently"][user]["name"].toLowerCase()) {
+
+                //tell them to get out of there
+                message.channel.send("<@" + message.author.id + "> your account name " + name + " has reached the time limit in the guild for this push. Please exit the guild and use the `" + PREFIX + "out` command.")
+                .then(m => m.delete(PUSHTIMEOUT * 10))
+                .catch(err => console.log(err));
+
+                log("<@" + message.author.id + "> on account name " + name + " has reached the time limit for the guild push in channel " + message.guild.channels.get(message.channel.id).toString());
+
+                return;
+            }
+        }
     }
