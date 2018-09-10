@@ -5,7 +5,7 @@ var votes = require('./storage/votes.json');
 var pushes = require('./storage/pushes.json');
 const BOTNAME = "Empire Ruler";
 var PREFIX = "$";
-const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n";
+const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n If you enjoy this bot, please star this repo by visiting the source code below!";
 var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 var boolFunCommands = true;
 var bot;
@@ -139,7 +139,7 @@ exports.functions = {
         var funCommands = PREFIX + "cat " +
         PREFIX + "dog " +
         PREFIX + "flip " +
-        PREFIX + "8ball ";
+        PREFIX + "ball ";
     
         var embed = new Discord.RichEmbed()
         .setAuthor("Showing commands for - " + showingRoles, message.author.avatarURL)
@@ -149,6 +149,7 @@ exports.functions = {
         .addField("Event Commands", eventCommands, true)
         .addField("Useful Links", usefulLinks, true)
         .addField("Push Commands", pushCommands)
+        .addField("Fun Commands", funCommands)
         .setColor(0x9B59B6)
         if (customP == "") {
             embed.addField("Custom Commands", "There are no custom commands to display.", true)
@@ -156,16 +157,15 @@ exports.functions = {
         else {
             embed.addField("Custom Commands", customP, true)
         }
-        if (boolFunCommands) {
-            embed.setFooter("Fun Commands " + funCommands)
-        }
+        embed.setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
+        
         message.author.send(embed);
     }, 
     info: function(message) {
         var embed = new Discord.RichEmbed()
         .addField(BOTNAME, BOTNAME + BOTDESC)
         .setColor(0x9B59B6)
-        .setFooter("Source code: https://github.com/puremana/iou-bot")
+        .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
         .setThumbnail(bot.user.avatarURL)
         message.channel.send(embed);
     },
@@ -1333,7 +1333,7 @@ function createPushEmbed(id) {
         .addField("Leader Commands", leaderCommands)
         .addField("Member Commands", commands)
         .setColor(0xE74C3C)
-        .setFooter("Message Level with any bug reports")
+        .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
         .setThumbnail(bot.user.avatarURL)
 
     return embed;
