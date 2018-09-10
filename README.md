@@ -38,7 +38,7 @@ All commands start with the prefix allocated in the bot.js and command.js files.
 - Event Commands
   - `invasion`
   - `energyevent`
-  - `rpg`*(
+  - `rpg`
   - `mafia`
 
 - Useful Links
