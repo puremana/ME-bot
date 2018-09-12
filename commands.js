@@ -1069,10 +1069,12 @@ exports.functions = {
                         .catch(err => console.log(err));
                     log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
                     
-                    setTimeout(function() {
-                        pingMember(message, text);
-                    }, pushes[message.channel.id]["push time"] * 60000);
-
+                    if (pushes[message.channel.id]["push time"] != 0) {
+                        setTimeout(function() {
+                            pingMember(message, text);
+                        }, pushes[message.channel.id]["push time"] * 60000);
+                    }
+                    
                     return;
                 } 
                 else {
@@ -1320,12 +1322,17 @@ function createPushEmbed(id) {
         sSlots = "Full (" + aSlots + ")";
     }
 
+    var pushTime = pInfo["push time"] + " Minutes";
+    if (pInfo["push time"] == 0) {
+        pushTime = "Infinite";
+    }
+
     var embed = new Discord.RichEmbed()
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
         .addField("Ending Date", pInfo["ending date"], true)
-        .addField("Push Time", pInfo["push time"] + " Minutes", true)
+        .addField("Push Time", pushTime, true)
         .addField("Available Slots", sSlots)
         .addField("Invites Needed", invites)
         .addField("Queue", queue)
