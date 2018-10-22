@@ -77,7 +77,7 @@ exports.functions = {
                 additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                 PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                 additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
-                pushcommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" \n' +
+                pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" \n' +
                 PREFIX + 'pushdelete \n';
             }
             else {
