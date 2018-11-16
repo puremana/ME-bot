@@ -117,6 +117,7 @@ exports.functions = {
         PREFIX + "senttop - `" + PREFIX + "senttop NumberOfPeopleToDelete` *(Leaders only)* \n" +
         PREFIX + "queueremove - `" + PREFIX + "queueremove AccountName` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
+        PREFIX + "showcommands - `" + PREFIX + "showcommands yes/no` *(Leaders only)* \n" +
         PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
         PREFIX + "queuejoin - `" + PREFIX + "queuejoin AccountName` \n" + 
         PREFIX + "queueleave - `" + PREFIX + "queueleave AccountName` \n" + 
@@ -694,7 +695,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : []};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -1011,7 +1012,7 @@ exports.functions = {
 
             return;
         }
-        
+
         //update slots
         pushes[message.channel.id]["slots"] = num;
         fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
@@ -1022,6 +1023,54 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
         log("<@" + message.author.id + "> has updated slots to **" + num + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+    },
+    showcommands: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var answer = message.content.substring(PREFIX.length + 13);
+
+        if (answer === 'yes' || answer === 'true') {
+            pushes[message.channel.id]["showcommands"] = true;
+            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+    
+            rewriteEmbed(message);
+
+            message.channel.send("The push message should now show commands.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+        }
+        else if (answer === 'no' || answer === 'false') {
+            pushes[message.channel.id]["showcommands"] = false;
+            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+    
+            rewriteEmbed(message);
+
+            message.channel.send("The push message should now not show any commands.")
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+        }
+        else {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "showcommands yes`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        log("<@" + message.author.id + "> has sent showcommands to **" + answer + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     in: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
@@ -1278,7 +1327,8 @@ function createPushEmbed(id) {
     '`' + PREFIX + 'senttop NumberOfPeopleToDelete` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'queueremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
-    '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)*';
+    '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' + 
+    '`' + PREFIX + 'showcommands yes/no` *(' + pushes[id]["leaders"] + ' only)*';
 
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
         '`' + PREFIX + 'queuejoin AccountName` \n' +
@@ -1327,7 +1377,8 @@ function createPushEmbed(id) {
         pushTime = "Infinite";
     }
 
-    var embed = new Discord.RichEmbed()
+    if (pInfo["showcommands"]) {
+        var embed = new Discord.RichEmbed()
         .setAuthor(pInfo["channel name"], bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
@@ -1342,6 +1393,22 @@ function createPushEmbed(id) {
         .setColor(0xE74C3C)
         .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
         .setThumbnail(bot.user.avatarURL)
+    }
+    else {
+        var embed = new Discord.RichEmbed()
+        .setAuthor(pInfo["channel name"], bot.user.avatarURL)
+        .addField("Description", pInfo["description"])
+        .addField("Instructions", PUSHINSTRUCTIONS)
+        .addField("Ending Date", pInfo["ending date"], true)
+        .addField("Push Time", pushTime, true)
+        .addField("Available Slots", sSlots)
+        .addField("Invites Needed", invites)
+        .addField("Queue", queue)
+        .addField("Pushing Currently", currently)
+        .setColor(0xE74C3C)
+        .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
+        .setThumbnail(bot.user.avatarURL)
+    }
 
     return embed;
     }

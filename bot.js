@@ -54,7 +54,6 @@ try {
         }
 
         var args = message.content.substring(PREFIX.length).split(" ");
-
         //Hashmap stuff
         if (hashArray.indexOf(args[0].toLowerCase()) > -1) {
             try {
