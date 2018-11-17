@@ -118,6 +118,7 @@ exports.functions = {
         PREFIX + "queueremove - `" + PREFIX + "queueremove AccountName` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
         PREFIX + "showcommands - `" + PREFIX + "showcommands yes/no` *(Leaders only)* \n" +
+        PREFIX + "createnewmessage - `" + PREFIX + "createnewmessage` *(Leaders only)* \n" +
         PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
         PREFIX + "queuejoin - `" + PREFIX + "queuejoin AccountName` \n" + 
         PREFIX + "queueleave - `" + PREFIX + "queueleave AccountName` \n" + 
@@ -1216,6 +1217,43 @@ exports.functions = {
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
     },
+    createnewmessage: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var id = message.channel.id;
+
+        //send embed
+        message.channel.send("Processing...")
+        .then(m => {
+            message.channel.fetchMessage(pushes[id]["messageid"])
+            .then(msg => {
+                msg.delete();
+            })
+            .catch(console.error);
+            pushes[id]["messageid"] = m.id;
+            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+
+            //make embed
+            var embed = createPushEmbed(id);
+
+            m.edit(embed);
+            log("<@" + message.author.id + "> has replaced/created a new message the push message in channel " + message.guild.channels.get(message.channel.id).toString());
+        })
+        .catch(err => console.log(err));
+    },
 
     //fun
     cat: function(message) {
@@ -1328,7 +1366,8 @@ function createPushEmbed(id) {
     '`' + PREFIX + 'queueremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' + 
-    '`' + PREFIX + 'showcommands yes/no` *(' + pushes[id]["leaders"] + ' only)*';
+    '`' + PREFIX + 'showcommands yes/no` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'createnewmessage` *(' + pushes[id]["leaders"] + ' only)*';
 
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
         '`' + PREFIX + 'queuejoin AccountName` \n' +
