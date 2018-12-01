@@ -18,10 +18,8 @@ const FUNCHANNELID = "247004062371807232";
 const BINGOTIMEOUT = 5000;
 const PUSHTIMEOUT = 15000;
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
-// const serverID = "208543018385539072";
-// const EMPIRELEADERSHIPID = "208544784728457216";
-const serverID = "355227226389872641";
-const EMPIRELEADERSHIPID = "363624411452014592";
+const serverID = "208543018385539072";
+const EMPIRELEADERSHIPID = "208544784728457216";
 
 exports.setters = {
     setBot: function(theBot) {
