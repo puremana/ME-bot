@@ -9,6 +9,7 @@ const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREF
 var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 var boolFunCommands = true;
 var bot;
+var weekliesFunction;
 const CHALLENGECHANNELID = "208561819588100096";
 const FUNCHANNELID = "247004062371807232";
 const BINGOTIMEOUT = 5000;
@@ -20,6 +21,9 @@ const EMPIRELEADERSHIPID = "208544784728457216";
 exports.setters = {
     setBot: function(theBot) {
         bot = theBot;
+    },
+    setWeekliesFunction: function(theWeekliesFunction) {
+        weekliesFunction = theWeekliesFunction;
     }
 }
 
@@ -98,6 +102,9 @@ exports.functions = {
         PREFIX + "serverinfo \n" +
         PREFIX + "bingoadd \n" +
         PREFIX + "bingoremove \n" +
+        PREFIX + "weekliesadd \n" +
+        PREFIX + "weekliesremove \n" +
+        PREFIX + "weeklieswhen \n" +
         additionalBot;
     
         var challengeCommands = PREFIX + "bronze \n" +
@@ -643,6 +650,11 @@ exports.functions = {
             message.channel.send("You don't have the weeklies role. Use `" + PREFIX + "weekliesadd` to get it.")
                 .then(m => m.delete(BINGOTIMEOUT))
                 .catch(err => console.log(err));
+        }
+    },
+    weeklieswhen: function(message) {
+        if (message.member != null) {
+            message.author.send("Weeklies should arrive " + weekliesFunction.nextInvocation().toString());
         }
     },
 

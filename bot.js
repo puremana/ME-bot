@@ -31,6 +31,34 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
     bot.guilds.find("id", serverID).channels.find("name", "me-general").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
+// Scheduler for Weeklies
+var weekliesRule = new schedule.RecurrenceRule();
+weekliesRule.dayOfWeek = [1];
+weekliesRule.hour = [12];
+weekliesRule.minute = 0;
+// Set to Seattle Timezone
+weekliesRule.tz = 'America/Dawsons';
+
+var weekliesFunction = schedule.scheduleJob(weekliesRule, function(){
+    var weekliesRole = bot.guilds.find("id", serverID).roles.find("name", "Weeklies");
+    bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
+});
+
+commands.setters["setWeekliesFunction"](weekliesFunction);
+
+// Scheduler for After Weeklies
+var afterWeekliesRule = new schedule.RecurrenceRule();
+afterWeekliesRule.dayOfWeek = [3];
+afterWeekliesRule.hour = [0];
+afterWeekliesRule.minute = 0;
+// Set to Seattle Timezone
+afterWeekliesRule.tz = 'America/Dawsons';
+
+var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
+    var empireRole = bot.guilds.find("id", serverID).roles.find("name", "Empire Leadership");
+    bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + empireRole.id + "> 36 hours since weekly parties have been released.");
+});
+
 bot.on("ready", function() {
 	console.log("Bot ready...");
 	bot.user.setGame(PREFIX + "help " + PREFIX + "info")
