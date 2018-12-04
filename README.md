@@ -14,13 +14,13 @@ All commands start with the prefix allocated in the bot.js and command.js files.
 - Bot Related
   - `help`
   - `info`
-  - `suggest`
   - `time`
   - `serverinfo`
   - `bingoadd`
   - `bingoremove`
   - `weekliesadd`
   - `weekliesremove`
+  - `weeklieswhen`
   - `add` - `add command-name description` *(admin only)*
   - `remove` - `remove command-name` *(admin only)*
   - `echo` - `echo message` *(admin only)*
@@ -51,11 +51,13 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `trello`
 
 - Push Commands
-  - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push" *(Admin only)*
+  - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push"` *(Admin only)*
   - `pushdelete`
   - `sent` - `sent AccountName` *(Leaders only)*
   - `senttop` - `senttop NumberOfPopleToDelete` *(Leaders only)*
   - `queueremove` - `queueremove AccountName` *(Leaders only)*
+  - `showcommands` - `showcommands yes/no` *(Leaders only)*
+  - `createnewmessage` *(Leaders only)*
   - `signup` - `signup AccountName`
   - `queuejoin` - `queuejoin AccountName`
   - `queueleave` - `queueleave AccountName`
@@ -63,10 +65,10 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `out` - `out AccountName`
 
 - Fun Commands *(Only within the specified fun channel)*
-  - cat
-  - dog
-  - ball
-  - flip
+  - `cat`
+  - `dog`
+  - `ball`
+  - `flip`
 
 ## Setting up
 1) Clone the repo
