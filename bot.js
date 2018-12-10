@@ -33,7 +33,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
 
 // Scheduler for Weeklies
 var weekliesRule = new schedule.RecurrenceRule();
-weekliesRule.dayOfWeek = [1];
+weekliesRule.dayOfWeek = [2];
 weekliesRule.hour = [12];
 weekliesRule.minute = 0;
 // Set to Seattle Timezone
