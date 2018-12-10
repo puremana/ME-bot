@@ -48,7 +48,7 @@ commands.setters["setWeekliesFunction"](weekliesFunction);
 
 // Scheduler for After Weeklies
 var afterWeekliesRule = new schedule.RecurrenceRule();
-afterWeekliesRule.dayOfWeek = [3];
+afterWeekliesRule.dayOfWeek = [4];
 afterWeekliesRule.hour = [0];
 afterWeekliesRule.minute = 0;
 // Set to Seattle Timezone
