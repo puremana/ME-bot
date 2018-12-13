@@ -34,7 +34,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
 // Scheduler for Weeklies
 var weekliesRule = new schedule.RecurrenceRule();
 weekliesRule.dayOfWeek = [2];
-weekliesRule.hour = [12];
+weekliesRule.hour = [0];
 weekliesRule.minute = 0;
 // Set to Seattle Timezone
 weekliesRule.tz = 'America/Dawsons';
@@ -48,8 +48,8 @@ commands.setters["setWeekliesFunction"](weekliesFunction);
 
 // Scheduler for After Weeklies
 var afterWeekliesRule = new schedule.RecurrenceRule();
-afterWeekliesRule.dayOfWeek = [4];
-afterWeekliesRule.hour = [0];
+afterWeekliesRule.dayOfWeek = [3];
+afterWeekliesRule.hour = [12];
 afterWeekliesRule.minute = 0;
 // Set to Seattle Timezone
 afterWeekliesRule.tz = 'America/Dawsons';
@@ -61,7 +61,7 @@ var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
 
 bot.on("ready", function() {
 	console.log("Bot ready...");
-	bot.user.setGame(PREFIX + "help " + PREFIX + "info")
+	bot.user.setActivity(PREFIX + "help " + PREFIX + "info")
     bot.user.setAvatar("./storage/avatar.png")
 });
 
