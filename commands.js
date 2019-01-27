@@ -1,25 +1,28 @@
+const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var fs = require("fs");
 var customCommands = require('./storage/custom.json');
 var votes = require('./storage/votes.json');
 var pushes = require('./storage/pushes.json');
-const BOTNAME = "Empire Ruler";
-var PREFIX = "$";
+const BOTNAME = setEnv(process.env.BOT_NAME, "Guild Bot");
+const PREFIX = setEnv(process.env.PREFIX, "$");
+const SERVERID = process.env.SERVER_ID;
+const LEADERSHIPID = process.env.LEADERSHIP_ID;
+const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
+const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
+const BINGOTIMEOUT = setEnv(process.env.BINGO_TIMEOUT, 5000);
+const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
+const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, TRUE);
+
+const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n If you enjoy this bot, please star this repo by visiting the source code below!";
-var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
-var boolFunCommands = true;
+
 var bot;
 var weekliesFunction;
-const CHALLENGECHANNELID = "208561819588100096";
-const FUNCHANNELID = "247004062371807232";
-const BINGOTIMEOUT = 5000;
-const PUSHTIMEOUT = 15000;
-const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
-const serverID = "208543018385539072";
-const EMPIRELEADERSHIPID = "208544784728457216";
 
 exports.setters = {
     setBot: function(theBot) {
@@ -79,8 +82,8 @@ exports.functions = {
         var pushCommands = "";
     
         if (message.member != null) {
-            if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id)) {
-                showingRoles = "Empire Leadership";
+            if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
+                showingRoles = "Leadership";
                 additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                 PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                 additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
@@ -217,7 +220,7 @@ exports.functions = {
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id)) {
+        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             if (args.length < 3) {
                 message.channel.send("Please enter the command in the format `" + PREFIX + "add command_name command description`.");
                 return;
@@ -232,7 +235,7 @@ exports.functions = {
             message.channel.send("Command " + PREFIX + args[1] + " added.");
         }
         else {
-            message.channel.send("You do not have the Empire Leadership role.");
+            message.channel.send("You do not have the Leadership role.");
         }
     },
     remove: function(message) {
@@ -241,7 +244,7 @@ exports.functions = {
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id)) {
+        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             if (args.length == 2) {
                 for (c in customCommands) {
                     if (args[1].toLowerCase() == c) {
@@ -259,7 +262,7 @@ exports.functions = {
             }
         }
         else {
-            message.channel.send("You do not have the Empire Leadership role.");
+            message.channel.send("You do not have the Leadership role.");
         }
     },
     echo: function(message) {
@@ -267,7 +270,7 @@ exports.functions = {
             message.channel.send("Message author is undefined.");
             return;
         }
-        if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id)) {
+        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             var text = message.content.substring(PREFIX.length + 5);
             message.channel.send(text);
             if (message.channel.type != "dm") {
@@ -279,7 +282,7 @@ exports.functions = {
             }
         }
         else {
-            message.channel.send("You do not have the Empire Leadership role.");
+            message.channel.send("You do not have the Leadership role.");
         }
     },
 
@@ -461,7 +464,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to close poll
-                if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //check the poll isn't already closed
                     if (votes[v]["closed"] == true) {
                         message.channel.send("This poll has already been closed.");
@@ -491,7 +494,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to close poll
-                if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //check the poll isn't open
                     if (votes[v]["closed"] == false) {
                         message.channel.send("This poll is already open.");
@@ -521,7 +524,7 @@ exports.functions = {
         for (v in votes) {
             if (v == rawSplit[1]) {
                 //check they have permissions to delete
-                if (message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
+                if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //delete poll
                     delete votes[v];
                     message.channel.send("Poll **" + rawSplit[1] + "** is now deleted.");
@@ -667,8 +670,8 @@ exports.functions = {
 
     //push
     pushsetup: function(message) {
-        if (!(message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
-            message.channel.send("You require the Empire Leadership role to create a push.")
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            message.channel.send("You require the Leadership role to create a push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -735,8 +738,8 @@ exports.functions = {
 
     },
     pushdelete: function(message) {
-        if (!(message.member.roles.has(message.guild.roles.get(EMPIRELEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
-            message.channel.send("You require the Empire Leadership role to delete a push.")
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            message.channel.send("You require the Leadership role to delete a push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -1276,7 +1279,7 @@ exports.functions = {
 
     //fun
     cat: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
             return;
         }
         Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
@@ -1285,7 +1288,7 @@ exports.functions = {
         });
     },
     dog: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
             return;
         }
         Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
@@ -1294,7 +1297,7 @@ exports.functions = {
         });
     },
     flip: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
             return;
         }
         var toss = (Math.floor(Math.random() * 2) == 0);
@@ -1306,7 +1309,7 @@ exports.functions = {
         }
     },
     ball: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (boolFunCommands == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
             return;
         }
         Promise.all([httpRequest("https", "8ball.delegator.com", "/magic/JSON/abc")]).then(values => { 
@@ -1491,7 +1494,7 @@ function createPushEmbed(id) {
         }
     }
     function log(text) {
-        bot.guilds.find("id", serverID).channels.find("name", "push-log").send(text);
+        bot.guilds.find("id", SERVERID).channels.find("name", "push-log").send(text);
     }
     function pingMember(message, name) {
         //if the member is still in the guild
@@ -1508,4 +1511,8 @@ function createPushEmbed(id) {
                 return;
             }
         }
+    }
+    // If the env variable is not set, use a default variable
+    function setEnv(envVariable, defaultVariable) {
+        return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
     }

@@ -1,15 +1,15 @@
 console.log("Bot loading...");
+const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var bot = new Discord.Client();
-var config = require('./storage/config.json');
 var customCommands = require('./storage/custom.json');
-var commands = require('./commands.js')
+var commands = require('./commands.js');
 var schedule = require('node-schedule-tz');
-const PREFIX = "$";
-const questionRegex = /^[$]+$/;
-const TOKEN = config.token;
-const TIMEOUT = 1500;
-const serverID = "208543018385539072";
+const PREFIX = setEnv(process.env.PREFIX, "$");
+const questionRegex = /^[PREFIX]+$/;
+const TOKEN = process.env.BOT_TOKEN;
+const TIMEOUT = setEnv(process.env.TIMEOUT, 1500);
+const serverID = process.env.SERVER_ID;
 
 //Load Bot - loop through functions in commands and add to hashmap
 var hashArray = [];
@@ -116,4 +116,9 @@ var deleteMessage = function(message) {
             console.log(err)
         }
     }
+}
+
+// If the env variable is not set, use a default variable
+function setEnv(envVariable, defaultVariable) {
+    return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
 }
