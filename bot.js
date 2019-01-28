@@ -10,6 +10,10 @@ const questionRegex = /^[PREFIX]+$/;
 const TOKEN = process.env.BOT_TOKEN;
 const TIMEOUT = setEnv(process.env.TIMEOUT, 1500);
 const serverID = process.env.SERVER_ID;
+const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
+const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
+const LEADERSHIPID = process.env.LEADERSHIP_ID;
+const WEEKLIES = setEnv(process.env.WEEKLIES, false);
 
 //Load Bot - loop through functions in commands and add to hashmap
 var hashArray = [];
@@ -27,37 +31,40 @@ rule.minute = 50;
 rule.tz = 'America/Indiana/Indianapolis';
 
 var bingoFunction = schedule.scheduleJob(rule, function(){
-    var bingoRole = bot.guilds.find("id", serverID).roles.find("name", "Bingo!!");
+    var bingoRole = bot.guilds.find("id", serverID).roles.find(role => role.name === BINGO_ROLE_NAME);
     bot.guilds.find("id", serverID).channels.find("name", "me-general").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
-// Scheduler for Weeklies
-var weekliesRule = new schedule.RecurrenceRule();
-weekliesRule.dayOfWeek = [2];
-weekliesRule.hour = [0];
-weekliesRule.minute = 0;
-// Set to Seattle Timezone
-weekliesRule.tz = 'America/Dawson';
 
-var weekliesFunction = schedule.scheduleJob(weekliesRule, function(){
-    var weekliesRole = bot.guilds.find("id", serverID).roles.find("name", "Weeklies");
-    bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
-});
+if (WEEKLIES) {
+    // Scheduler for Weeklies
+    var weekliesRule = new schedule.RecurrenceRule();
+    weekliesRule.dayOfWeek = [2];
+    weekliesRule.hour = [0];
+    weekliesRule.minute = 0;
+    // Set to Seattle Timezone
+    weekliesRule.tz = 'America/Dawson';
 
-commands.setters["setWeekliesFunction"](weekliesFunction);
+    var weekliesFunction = schedule.scheduleJob(weekliesRule, function(){
+        var weekliesRole = bot.guilds.find("id", serverID).roles.find(role => role.name === WEEKLIES_ROLE_NAME);
+        bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
+    });
 
-// Scheduler for After Weeklies
-var afterWeekliesRule = new schedule.RecurrenceRule();
-afterWeekliesRule.dayOfWeek = [3];
-afterWeekliesRule.hour = [12];
-afterWeekliesRule.minute = 0;
-// Set to Seattle Timezone
-afterWeekliesRule.tz = 'America/Dawson';
+    commands.setters["setWeekliesFunction"](weekliesFunction);
 
-var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
-    var empireRole = bot.guilds.find("id", serverID).roles.find("name", "Empire Leadership");
-    bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + empireRole.id + "> 36 hours since weekly parties have been released.");
-});
+    // Scheduler for After Weeklies
+    var afterWeekliesRule = new schedule.RecurrenceRule();
+    afterWeekliesRule.dayOfWeek = [3];
+    afterWeekliesRule.hour = [12];
+    afterWeekliesRule.minute = 0;
+    // Set to Seattle Timezone
+    afterWeekliesRule.tz = 'America/Dawson';
+
+    var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
+        var empireRole = bot.guilds.find("id", serverID).roles.find(role => role.id === LEADERSHIPID);
+        bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + empireRole.id + "> 36 hours since weekly parties have been released.");
+    });
+}
 
 bot.on("ready", function() {
 	console.log("Bot ready...");

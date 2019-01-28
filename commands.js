@@ -12,6 +12,8 @@ const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
 const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, true);
+const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
+const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n If you enjoy this bot, please star this repo by visiting the source code below!";
@@ -587,22 +589,22 @@ exports.functions = {
     //bingo
     bingoadd: function(message) {
         //check doesn't already have bingo role
-        if (message.member.roles.find("name", "Bingo!!")) {
+        if (message.member.roles.find(role => role.name === BINGO_ROLE_NAME)) {
             reply(message, "You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
             return;
         }
         //add the role
-        var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
-        reply(message, "Your bingo role has been added.")
+        let bingoRole = message.member.guild.roles.find(role => role.name === BINGO_ROLE_NAME);
         message.member.addRole(bingoRole, "Command issued.");
+        reply(message, "Your bingo role has been added.")
     },
     bingoremove: function(message) {
         //check they have the bingo role
-        if (message.member.roles.find("name", "Bingo!!")) {
+        if (message.member.roles.find(role => role.name === BINGO_ROLE_NAME)) {
             //remove the role
-            var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
-            reply(message, "Your bingo role has been removed.")
+            let bingoRole = message.member.guild.roles.find(role => role.name === BINGO_ROLE_NAME);
             message.member.removeRole(bingoRole, "Command issued.");
+            reply(message, "Your bingo role has been removed.")
         }
         else {
             reply(message, "You don't have the bingo role. Use `" + PREFIX + "bingoadd` to get it.")
@@ -616,12 +618,12 @@ exports.functions = {
             return;
         }
         //check doesn't already have weeklies role
-        if (message.member.roles.find("name", "Weeklies")) {
+        if (message.member.roles.find(role => role.name === WEEKLIES_ROLE_NAME)) {
             reply(message, "You already have the weeklies role. Use `" + PREFIX + "weekliesremove` to remove it.")
             return;
         }
         //add the role
-        var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
+        let weekliesRole = message.member.guild.roles.find(role => role.name === WEEKLIES_ROLE_NAME);
         reply(message, "Your weeklies role has been added.")
         message.member.addRole(weekliesRole, "Command issued.");
     },
@@ -631,9 +633,9 @@ exports.functions = {
             return;
         }
         //check they have the bingo role
-        if (message.member.roles.find("name", "Weeklies")) {
+        if (message.member.roles.find(role => role.name === WEEKLIES_ROLE_NAME)) {
             //remove the role
-            var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
+            let weekliesRole = message.member.guild.roles.find(role => role.name === WEEKLIES_ROLE_NAME);
             reply(message, "Your weeklies role has been removed.")
             message.member.removeRole(weekliesRole, "Command issued.");
         }
@@ -869,7 +871,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to remove other players from this push queue.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -909,7 +911,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -950,7 +952,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1002,7 +1004,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1039,7 +1041,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1193,7 +1195,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1231,7 +1233,7 @@ exports.functions = {
             return;
         }
 
-        if (!message.member.roles.find("name", pushes[message.channel.id]["leaders"])) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
             message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1501,6 +1503,6 @@ function createPushEmbed(id) {
     }
 
     function reply(message, content) {
-        reply(message, content)
+        message.channel.send(content)
             .catch(err => console.log(err));
     }
