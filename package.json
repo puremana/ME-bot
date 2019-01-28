@@ -12,6 +12,6 @@
     "discord.js": "^11.2.1",
     "dotenv": "^6.2.0",
     "fs": "0.0.1-security",
-    "node-schedule-tz": "^1.2.1-4"
+    "node-schedule": "^1.3.1"
   }
 }
