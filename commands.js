@@ -10,6 +10,7 @@ const SERVERID = process.env.SERVER_ID;
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
+const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
 const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, true);
 const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
@@ -23,11 +24,15 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
 ];
 
 var bot;
+var bingoFunction;
 var weekliesFunction;
 
 exports.setters = {
     setBot: function(theBot) {
         bot = theBot;
+    },
+    setBingoFunction: function(theBingoFunction) {
+        bingoFunction = theBingoFunction;
     },
     setWeekliesFunction: function(theWeekliesFunction) {
         weekliesFunction = theWeekliesFunction;
@@ -109,6 +114,7 @@ exports.functions = {
         PREFIX + "serverinfo \n" +
         PREFIX + "bingoadd \n" +
         PREFIX + "bingoremove \n" +
+        PREFIX + "bingowhen \n" +
         PREFIX + "weekliesadd \n" +
         PREFIX + "weekliesremove \n" +
         PREFIX + "weeklieswhen \n" +
@@ -609,6 +615,40 @@ exports.functions = {
         else {
             reply(message, "You don't have the bingo role. Use `" + PREFIX + "bingoadd` to get it.")
         }
+    },
+    bingowhen: function(message) {
+        if (message.author == null) {
+            return;
+        }
+
+        let bingoDate = bingoFunction.nextInvocation().getTime();
+        // Adjusting for the 10 minutes before bingo that the bot sends the notifcation message
+        bingoDate = bingoDate + 600000;
+        let now = Date.now();
+        let diff = bingoDate - now;
+
+        var msec = diff;
+        var days = Math.floor(msec / 1000 / 60 / 60 / 24);
+        msec -= days * 1000 * 60 * 60 * 24;
+        var hours = Math.floor(msec / 1000 / 60 / 60);
+        msec -= hours * 1000 * 60 * 60;
+        var minutes = Math.floor(msec / 1000 / 60);
+        msec -= minutes * 1000 * 60;
+        var seconds = Math.floor(msec / 1000);
+        msec -= seconds * 1000;
+
+        let stringDiff = "The next bingo will be in ";
+        
+        if (days > 0) {
+            stringDiff = stringDiff + days + " days, ";
+        }
+        if (hours > 0) {
+            stringDiff = stringDiff + hours + " hours, ";
+        }
+
+        stringDiff = stringDiff + minutes + " minutes, and " + seconds + " seconds";
+
+        message.channel.send(stringDiff);
     },
 
     //weeklies
@@ -1479,7 +1519,8 @@ function createPushEmbed(id) {
         }
     }
     function log(text) {
-        bot.guilds.find("id", SERVERID).channels.find("name", "push-log").send(text);
+        bot.guilds.find(name => name.id === SERVERID).channels.find(channel => channel.id === PUSH_LOG_ID).send(text)
+            .catch(err => console.log(err));
     }
     function pingMember(message, name) {
         //if the member is still in the guild

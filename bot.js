@@ -14,6 +14,7 @@ const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
 const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const WEEKLIES = setEnv(process.env.WEEKLIES, false);
+const BINGO_CHANNEL_ID = process.env.BINGO_CHANNEL_ID;
 
 //Load Bot - loop through functions in commands and add to hashmap
 var hashArray = [];
@@ -31,10 +32,11 @@ rule.minute = 50;
 rule.tz = 'America/Indiana/Indianapolis';
 
 var bingoFunction = schedule.scheduleJob(rule, function(){
-    var bingoRole = bot.guilds.find("id", serverID).roles.find(role => role.name === BINGO_ROLE_NAME);
-    bot.guilds.find("id", serverID).channels.find("name", "me-general").send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
+    var bingoRole = bot.guilds.find(name => name.id === serverID).roles.find(role => role.name === BINGO_ROLE_NAME);
+    bot.guilds.find(name => name.id === serverID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
+commands.setters["setBingoFunction"](bingoFunction);
 
 if (WEEKLIES) {
     // Scheduler for Weeklies
@@ -46,8 +48,8 @@ if (WEEKLIES) {
     weekliesRule.tz = 'America/Dawson';
 
     var weekliesFunction = schedule.scheduleJob(weekliesRule, function(){
-        var weekliesRole = bot.guilds.find("id", serverID).roles.find(role => role.name === WEEKLIES_ROLE_NAME);
-        bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
+        var weekliesRole = bot.guilds.find(name => name.id === serverID).roles.find(role => role.name === WEEKLIES_ROLE_NAME);
+        bot.guilds.find(name => name.id === serverID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
     });
 
     commands.setters["setWeekliesFunction"](weekliesFunction);
@@ -61,8 +63,8 @@ if (WEEKLIES) {
     afterWeekliesRule.tz = 'America/Dawson';
 
     var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
-        var empireRole = bot.guilds.find("id", serverID).roles.find(role => role.id === LEADERSHIPID);
-        bot.guilds.find("id", serverID).channels.find("name", "parties").send("<@&" + empireRole.id + "> 36 hours since weekly parties have been released.");
+        var empireRole = bot.guilds.find(name => name.id === serverID).roles.find(role => role.id === LEADERSHIPID);
+        bot.guilds.find(name => name.id === serverID).channels.find("name", "parties").send("<@&" + empireRole.id + "> 36 hours since weekly parties have been released.");
     });
 }
 

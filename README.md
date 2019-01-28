@@ -18,6 +18,7 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `serverinfo`
   - `bingoadd`
   - `bingoremove`
+  - `bingowhen`
   - `weekliesadd`
   - `weekliesremove`
   - `weeklieswhen`
