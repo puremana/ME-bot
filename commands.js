@@ -10,9 +10,8 @@ const SERVERID = process.env.SERVER_ID;
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
-const BINGOTIMEOUT = setEnv(process.env.BINGO_TIMEOUT, 5000);
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
-const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, TRUE);
+const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, true);
 
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n If you enjoy this bot, please star this repo by visiting the source code below!";
@@ -37,32 +36,32 @@ exports.functions = {
     //Challenge Commands
     bronze: function(message) {
         if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            message.channel.send("http://i.imgur.com/POra9Kx.jpg");
+            reply(message, "http://i.imgur.com/POra9Kx.jpg");
         }
     },
     silver: function(message) {
         if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            message.channel.send("http://i.imgur.com/rkJ51fC.jpg");
+            reply(message, "http://i.imgur.com/rkJ51fC.jpg");
         }
     },
     gold: function(message) {
         if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            message.channel.send("http://i.imgur.com/5GXghiA.jpg");
+            reply(message, "http://i.imgur.com/5GXghiA.jpg");
         }
     },
 
     //Event Commands
     invasion: function(message) {
-        message.channel.send("https://docs.google.com/spreadsheets/d/1RDw0FEdFd6lKhmvMK972J5_xvvjVYeUYrTQQ4ZbMR74/edit");
+        reply(message, "https://docs.google.com/spreadsheets/d/1RDw0FEdFd6lKhmvMK972J5_xvvjVYeUYrTQQ4ZbMR74/edit");
     },
     energyevent: function(message) {
-        message.channel.send("https://docs.google.com/spreadsheets/d/1R97uuDvEI80LBbqxveXIyHbwMGXG-nZsGvlH5YNoiV8/edit");
+        reply(message, "https://docs.google.com/spreadsheets/d/1R97uuDvEI80LBbqxveXIyHbwMGXG-nZsGvlH5YNoiV8/edit");
     },
     rpg: function(message) {
-        message.channel.send("https://docs.google.com/document/d/1laVfybGGtTsXs_jeXQcE9yUpV8xz0FMokBFvCSIcIa4/edit?usp=sharing")
+        reply(message, "https://docs.google.com/document/d/1laVfybGGtTsXs_jeXQcE9yUpV8xz0FMokBFvCSIcIa4/edit?usp=sharing")
     },
     mafia: function(message) {
-        message.channel.send("https://docs.google.com/spreadsheets/d/1AzBi0Dt9AePvASVeiWAUSSVcpTHfpQlUzDrIWxCL8AA/edit#gid=0");
+        reply(message, "https://docs.google.com/spreadsheets/d/1AzBi0Dt9AePvASVeiWAUSSVcpTHfpQlUzDrIWxCL8AA/edit#gid=0");
     },
 
     //Bot Related Commands
@@ -74,7 +73,7 @@ exports.functions = {
     
         var stringDate = EST.getDate() + "/" + (EST.getMonth() + 1) + "/" + EST.getFullYear();
         var stringTime = EST.getHours() + ":" + EST.getMinutes() + ":" + EST.getSeconds();
-        message.channel.send("**Server Time:** " + days[EST.getDay()] + " " + stringDate + " " + stringTime + " (EST)");
+        reply(message, "**Server Time:** " + days[EST.getDay()] + " " + stringDate + " " + stringTime + " (EST)");
     }, 
     help: function(message) {
         var showingRoles = "";
@@ -182,7 +181,7 @@ exports.functions = {
         .setColor(0x9B59B6)
         .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
         .setThumbnail(bot.user.avatarURL)
-        message.channel.send(embed);
+        reply(message, embed);
     },
     serverinfo: function(message) {
         if (message.channel.type == "dm") {
@@ -212,17 +211,17 @@ exports.functions = {
         .addField("Total Members", totalMembers, true)
         .addField("Invite Link", "https://discord.gg/WfcvtZm", true)
         .setFooter("Server creation - " + message.guild.createdAt, message.guild.owner.user.avatarURL)
-        message.channel.send(embed);
+        reply(message, embed);
     },
     add: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
         if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             if (args.length < 3) {
-                message.channel.send("Please enter the command in the format `" + PREFIX + "add command_name command description`.");
+                reply(message, "Please enter the command in the format `" + PREFIX + "add command_name command description`.");
                 return;
             }
             var desc = "";
@@ -232,15 +231,15 @@ exports.functions = {
             var command = "\'" + args[1].toLowerCase() + "': '" + desc + "',";
             customCommands[args[1].toLowerCase()] = desc;
             fs.writeFile("storage/custom.json", JSON.stringify(customCommands), "utf8");
-            message.channel.send("Command " + PREFIX + args[1] + " added.");
+            reply(message, "Command " + PREFIX + args[1] + " added.");
         }
         else {
-            message.channel.send("You do not have the Leadership role.");
+            reply(message, "You do not have the Leadership role.");
         }
     },
     remove: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -250,29 +249,29 @@ exports.functions = {
                     if (args[1].toLowerCase() == c) {
                         delete customCommands[c];
                         fs.writeFile("storage/custom.json", JSON.stringify(customCommands), "utf8");
-                        message.channel.send("Command " + PREFIX + args[1] + " removed.");
+                        reply(message, "Command " + PREFIX + args[1] + " removed.");
                         return;
                     }
                 }
-                message.channel.send("There is no " + PREFIX + args[1] + " command.");
+                reply(message, "There is no " + PREFIX + args[1] + " command.");
             }
             else {
-                message.channel.send("Please enter the command in the format `" + PREFIX + "remove command_name`.");
+                reply(message, "Please enter the command in the format `" + PREFIX + "remove command_name`.");
                 return;
             }
         }
         else {
-            message.channel.send("You do not have the Leadership role.");
+            reply(message, "You do not have the Leadership role.");
         }
     },
     echo: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             var text = message.content.substring(PREFIX.length + 5);
-            message.channel.send(text);
+            reply(message, text);
             if (message.channel.type != "dm") {
                 try {
                     message.delete(0);
@@ -282,14 +281,14 @@ exports.functions = {
             }
         }
         else {
-            message.channel.send("You do not have the Leadership role.");
+            reply(message, "You do not have the Leadership role.");
         }
     },
 
     //Voting
     votenew: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -297,13 +296,13 @@ exports.functions = {
         //if there is already a poll with this name
         for (v in votes) {
             if (v == rawSplit[1]) {
-                message.channel.send("There is already a poll with the name **" + rawSplit[1] + "**. Please `" + PREFIX + "voteclose` it before recreating.");
+                reply(message, "There is already a poll with the name **" + rawSplit[1] + "**. Please `" + PREFIX + "voteclose` it before recreating.");
                 return;
             }
         }
         //if the poll options isn't an int
         if (isNaN(rawSplit[3])) {
-            message.channel.send("Please make sure the second argument (number of votes) is a number before creating the poll.");
+            reply(message, "Please make sure the second argument (number of votes) is a number before creating the poll.");
             return;
         }
         //create a new poll with those options
@@ -316,7 +315,7 @@ exports.functions = {
         }
         var vJson = {"author" : message.author.id, "numOptions" : rawSplit[3], "voteOptions" : voteOptions, "closed" : false};
         if (!verifyJson(vJson)) {
-            message.channel.send("Message could not be saved. Please try again.");
+            reply(message, "Message could not be saved. Please try again.");
             return;
         }
         votes[rawSplit[1]] = vJson;
@@ -326,7 +325,7 @@ exports.functions = {
     },
     vote: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -347,18 +346,18 @@ exports.functions = {
                     }
                 }
                 if (numVotes <= count) {
-                    message.channel.send(':negative_squared_cross_mark: Already voted, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
+                    reply(message, ':negative_squared_cross_mark: Already voted, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
                     return;
                 }
                 //check the poll isn't closed already
                 if (votes[v]["closed"] == true) {
-                    message.channel.send(':negative_squared_cross_mark: This poll has been closed.');
+                    reply(message, ':negative_squared_cross_mark: This poll has been closed.');
                     return;
                 }
                 //check number of votes they are doing is less than what's in there
                 var messageVotes = (rawSplit.count - 2) / 2;
                 if ((messageVotes + count) > numVotes) {
-                    message.channel.send(':negative_squared_cross_mark: Trying to enter too many votes, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
+                    reply(message, ':negative_squared_cross_mark: Trying to enter too many votes, please use `' + PREFIX + 'votereset "poll name"` before trying again.');
                     return;
                 }
                 //if they haven't put their vote or votes in 
@@ -366,18 +365,18 @@ exports.functions = {
                 var theVotes = [];
                 for (var l = 3; l < rawSplit.length; l = l + 2) {
                     if (isNaN(rawSplit[l])) {
-                        message.channel.send(':negative_squared_cross_mark: Use digits to indicate what you are voting for. Please try again.');
+                        reply(message, ':negative_squared_cross_mark: Use digits to indicate what you are voting for. Please try again.');
                         return;
                     }
                     if (parseInt(rawSplit[l]) > (poll.length / 2)) {
-                        message.channel.send(':negative_squared_cross_mark: One or more of your votes are not in the poll. Please try again.');
+                        reply(message, ':negative_squared_cross_mark: One or more of your votes are not in the poll. Please try again.');
                         return;
                     }
                     theVotes.push(rawSplit[l]);
                 }
                 //check not voting for same thing twice
                 if ((new Set(theVotes)).size !== theVotes.length) {
-                    message.channel.send(':negative_squared_cross_mark: You cannot vote for the same option twice. Please try again.');
+                    reply(message, ':negative_squared_cross_mark: You cannot vote for the same option twice. Please try again.');
                     return;
                 }
                 //else put their vote in
@@ -385,7 +384,7 @@ exports.functions = {
                     var num = parseInt(theVotes[j]) + parseInt(theVotes[j] - 1);
                     for (var o = 0; o < poll[num].length; o++) {
                         if (poll[num][o] == message.author.id) {
-                            message.channel.send(':negative_squared_cross_mark: You cannot vote for the same option twice. Please try again.');
+                            reply(message, ':negative_squared_cross_mark: You cannot vote for the same option twice. Please try again.');
                             return;
                         }
                     }
@@ -393,21 +392,21 @@ exports.functions = {
                 }
                 fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
                 if (theVotes.length == 1) {
-                    message.channel.send(':white_check_mark: Your vote has been registered.');
+                    reply(message, ':white_check_mark: Your vote has been registered.');
                 }
                 else {
-                    message.channel.send(':white_check_mark: Your votes have been registered.');
+                    reply(message, ':white_check_mark: Your votes have been registered.');
                 }
                 displayPoll(message, rawSplit[1]);
                 return;
             }
         }
-        message.channel.send(":negative_squared_cross_mark: Couldn't find poll name " + rawSplit[1]);
+        reply(message, ":negative_squared_cross_mark: Couldn't find poll name " + rawSplit[1]);
         return;
     },
     votecheck: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -425,20 +424,20 @@ exports.functions = {
                     }
                 }
                 if (arrayResult.length > 0) {
-                    message.channel.send("Your current votes in poll **" + rawSplit[1] + "** are options " + arrayResult);
+                    reply(message, "Your current votes in poll **" + rawSplit[1] + "** are options " + arrayResult);
                 }
                 else {
-                    message.channel.send("You haven't voted in this poll yet.");
+                    reply(message, "You haven't voted in this poll yet.");
                 }
                 return;
             }
         }
-        message.channel.send("Couldn't find poll name " + rawSplit[1]);
+        reply(message, "Couldn't find poll name " + rawSplit[1]);
         return;
     },
     votedisplay: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -450,12 +449,12 @@ exports.functions = {
                 return;
             }
         }
-        message.channel.send("Couldn't find poll name " + rawSplit[1]);
+        reply(message, "Couldn't find poll name " + rawSplit[1]);
         return;
     },
     voteclose: function (message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -467,17 +466,17 @@ exports.functions = {
                 if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //check the poll isn't already closed
                     if (votes[v]["closed"] == true) {
-                        message.channel.send("This poll has already been closed.");
+                        reply(message, "This poll has already been closed.");
                         return;
                     }
                     //close poll
                     votes[v]["closed"] = true;
-                    message.channel.send("Poll **" + rawSplit[1] + "** is now closed.");
+                    reply(message, "Poll **" + rawSplit[1] + "** is now closed.");
                     fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
                     return;
                 }
                 else {
-                    message.channel.send("You do not have permissions to close this poll.");
+                    reply(message, "You do not have permissions to close this poll.");
                     return;
                 }
             }
@@ -485,7 +484,7 @@ exports.functions = {
     },
     voteopen: function (message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -497,17 +496,17 @@ exports.functions = {
                 if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //check the poll isn't open
                     if (votes[v]["closed"] == false) {
-                        message.channel.send("This poll is already open.");
+                        reply(message, "This poll is already open.");
                         return;
                     }
                     //open poll
                     votes[v]["closed"] = false;
-                    message.channel.send("Poll **" + rawSplit[1] + "** has been reopened.");
+                    reply(message, "Poll **" + rawSplit[1] + "** has been reopened.");
                     fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
                     return;
                 }
                 else {
-                    message.channel.send("You do not have permissions to open this poll.");
+                    reply(message, "You do not have permissions to open this poll.");
                     return;
                 }
             }
@@ -515,7 +514,7 @@ exports.functions = {
     },
     votedelete: function (message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -527,12 +526,12 @@ exports.functions = {
                 if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || message.member.id == vote[v]["author"]) {
                     //delete poll
                     delete votes[v];
-                    message.channel.send("Poll **" + rawSplit[1] + "** is now deleted.");
+                    reply(message, "Poll **" + rawSplit[1] + "** is now deleted.");
                     fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
                     return;
                 }
                 else {
-                    message.channel.send("You do not have permissions to close this poll.");
+                    reply(message, "You do not have permissions to close this poll.");
                     return;
                 }
             }
@@ -540,7 +539,7 @@ exports.functions = {
     },
     votereset: function(message) {
         if (message.member == null) {
-            message.channel.send("Message author is undefined.");
+            reply(message, "Message author is undefined.");
             return;
         }
         var args = message.content.substring(PREFIX.length).split(" ");
@@ -556,7 +555,7 @@ exports.functions = {
                         poll[i].splice(index, 1);
                     }
                 }
-                message.channel.send("Your responses for poll **" + rawSplit[1] + "** have been reset.");
+                reply(message, "Your responses for poll **" + rawSplit[1] + "** have been reset.");
                 fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
             }
         }
@@ -564,41 +563,37 @@ exports.functions = {
 
     //Useful Links
     guide: function(message) {
-        message.channel.send("https://tinyurl.com/IOUguide");
+        reply(message, "https://tinyurl.com/IOUguide");
     },
     multicalc: function(message) {
-        message.channel.send("https://docs.google.com/spreadsheets/d/1QGBm6KtcOZraqSkLWVuqTF16vUD7rrOvIpdh59bFLmg/edit#gid=357923173");
+        reply(message, "https://docs.google.com/spreadsheets/d/1QGBm6KtcOZraqSkLWVuqTF16vUD7rrOvIpdh59bFLmg/edit#gid=357923173");
     },
     forum: function(message) {
-        message.channel.send("http://iourpg.com/forum");
+        reply(message, "http://iourpg.com/forum");
     },
     wiki: function(message) {
-        message.channel.send("http://iourpg.wikia.com/wiki/Idle_Online_Universe_Wiki");
+        reply(message, "http://iourpg.wikia.com/wiki/Idle_Online_Universe_Wiki");
     },
     cards: function(message) {
-        message.channel.send("http://iouhelper.com/cards.html");
+        reply(message, "http://iouhelper.com/cards.html");
     },
     test: function(message) {
-        message.channel.send("https://discord.gg/ncEarFv");
+        reply(message, "https://discord.gg/ncEarFv");
     },
     trello: function(message) {
-        message.channel.send("https://trello.com/b/usVhG9Ry/iou-development-board");
+        reply(message, "https://trello.com/b/usVhG9Ry/iou-development-board");
     },
 
     //bingo
     bingoadd: function(message) {
         //check doesn't already have bingo role
         if (message.member.roles.find("name", "Bingo!!")) {
-            message.channel.send("You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
             return;
         }
         //add the role
         var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
-        message.channel.send("Your bingo role has been added.")
-            .then(m => m.delete(BINGOTIMEOUT))
-            .catch(err => console.log(err));
+        reply(message, "Your bingo role has been added.")
         message.member.addRole(bingoRole, "Command issued.");
     },
     bingoremove: function(message) {
@@ -606,15 +601,11 @@ exports.functions = {
         if (message.member.roles.find("name", "Bingo!!")) {
             //remove the role
             var bingoRole = message.member.guild.roles.find("name", "Bingo!!");
-            message.channel.send("Your bingo role has been removed.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "Your bingo role has been removed.")
             message.member.removeRole(bingoRole, "Command issued.");
         }
         else {
-            message.channel.send("You don't have the bingo role. Use `" + PREFIX + "bingoadd` to get it.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "You don't have the bingo role. Use `" + PREFIX + "bingoadd` to get it.")
         }
     },
 
@@ -626,16 +617,12 @@ exports.functions = {
         }
         //check doesn't already have weeklies role
         if (message.member.roles.find("name", "Weeklies")) {
-            message.channel.send("You already have the weeklies role. Use `" + PREFIX + "weekliesremove` to remove it.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "You already have the weeklies role. Use `" + PREFIX + "weekliesremove` to remove it.")
             return;
         }
         //add the role
         var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
-        message.channel.send("Your weeklies role has been added.")
-            .then(m => m.delete(BINGOTIMEOUT))
-            .catch(err => console.log(err));
+        reply(message, "Your weeklies role has been added.")
         message.member.addRole(weekliesRole, "Command issued.");
     },
     weekliesremove: function(message) {
@@ -647,15 +634,11 @@ exports.functions = {
         if (message.member.roles.find("name", "Weeklies")) {
             //remove the role
             var weekliesRole = message.member.guild.roles.find("name", "Weeklies");
-            message.channel.send("Your weeklies role has been removed.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "Your weeklies role has been removed.")
             message.member.removeRole(weekliesRole, "Command issued.");
         }
         else {
-            message.channel.send("You don't have the weeklies role. Use `" + PREFIX + "weekliesadd` to get it.")
-                .then(m => m.delete(BINGOTIMEOUT))
-                .catch(err => console.log(err));
+            reply(message, "You don't have the weeklies role. Use `" + PREFIX + "weekliesadd` to get it.")
         }
     },
     weeklieswhen: function(message) {
@@ -715,7 +698,7 @@ exports.functions = {
         }
 
         //send embed
-        message.channel.send("Processing...")
+        reply(message, "Processing...")
         .then(m => {        
             //create push
             var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
@@ -750,7 +733,7 @@ exports.functions = {
                 deleteEmbed(message);
 
                 delete pushes[p];
-                message.channel.send("Push deleted.")
+                reply(message, "Push deleted.")
                     .then(m => m.delete(PUSHTIMEOUT))
                     .catch(err => console.log(err));
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
@@ -1258,7 +1241,7 @@ exports.functions = {
         var id = message.channel.id;
 
         //send embed
-        message.channel.send("Processing...")
+        reply(message, "Processing...")
         .then(m => {
             message.channel.fetchMessage(pushes[id]["messageid"])
             .then(msg => {
@@ -1284,7 +1267,7 @@ exports.functions = {
         }
         Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
             catJson = JSON.parse(values[0]);
-            message.channel.send(catJson.file);
+            reply(message, catJson.file);
         });
     },
     dog: function(message) {
@@ -1293,7 +1276,7 @@ exports.functions = {
         }
         Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
             dogJson = JSON.parse(values[0]);
-            message.channel.send(dogJson.message);
+            reply(message, dogJson.message);
         });
     },
     flip: function(message) {
@@ -1302,10 +1285,10 @@ exports.functions = {
         }
         var toss = (Math.floor(Math.random() * 2) == 0);
         if (toss) {
-            message.channel.send("Heads");
+            reply(message, "Heads");
         } 
         else {
-            message.channel.send("Tails");
+            reply(message, "Tails");
         }
     },
     ball: function(message) {
@@ -1314,7 +1297,7 @@ exports.functions = {
         }
         Promise.all([httpRequest("https", "8ball.delegator.com", "/magic/JSON/abc")]).then(values => { 
             ballJson = JSON.parse(values[0]);
-            message.channel.send(ballJson.magic.answer);
+            reply(message, ballJson.magic.answer);
         });
     }
 }
@@ -1353,7 +1336,7 @@ var displayPoll = function(message, nameOfPoll) {
         textMessage = textMessage + "`[" + num + "] " + poll[i] + ": " + poll[i + 1].length + "`\n";
         num++;
     }
-    message.channel.send(textMessage);
+    reply(message, textMessage);
 }
 function verifyJson(json) {
     try {
@@ -1488,7 +1471,7 @@ function createPushEmbed(id) {
         }
 
         if (text != "") {
-            message.channel.send(text)
+            reply(message, text)
                 .then(m => m.delete(PUSHTIMEOUT * 10))
                 .catch(err => console.log(err));
         }
@@ -1515,4 +1498,9 @@ function createPushEmbed(id) {
     // If the env variable is not set, use a default variable
     function setEnv(envVariable, defaultVariable) {
         return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
+    }
+
+    function reply(message, content) {
+        reply(message, content)
+            .catch(err => console.log(err));
     }

@@ -37,7 +37,7 @@ weekliesRule.dayOfWeek = [2];
 weekliesRule.hour = [0];
 weekliesRule.minute = 0;
 // Set to Seattle Timezone
-weekliesRule.tz = 'America/Dawsons';
+weekliesRule.tz = 'America/Dawson';
 
 var weekliesFunction = schedule.scheduleJob(weekliesRule, function(){
     var weekliesRole = bot.guilds.find("id", serverID).roles.find("name", "Weeklies");
@@ -52,7 +52,7 @@ afterWeekliesRule.dayOfWeek = [3];
 afterWeekliesRule.hour = [12];
 afterWeekliesRule.minute = 0;
 // Set to Seattle Timezone
-afterWeekliesRule.tz = 'America/Dawsons';
+afterWeekliesRule.tz = 'America/Dawson';
 
 var afterWeekliesFunction = schedule.scheduleJob(afterWeekliesRule, function(){
     var empireRole = bot.guilds.find("id", serverID).roles.find("name", "Empire Leadership");
