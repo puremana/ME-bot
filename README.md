@@ -72,17 +72,18 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `flip`
 
 ## Setting up
-1) Clone the repo
+1) Clone the repo. You can do this by running "git clone https://github.com/puremana/ME-bot.git" in terminal. You will need to install git if you haven't already
 2) Go to https://discordapp.com/developers/applications/me
 3) Create a new app
 4) Click "Create bot user"
-5) Click to reveal token
-6) Rename the storage.example folder to storage
-7) Replace the token in the config.json file located in storage
-8) Open cmd and run "npm install" (install nodejs if you don't have it installed already)
-9) Get the client ID from where you found the token. Go to https://discordapp.com/oauth2/authorize?client_id=INSERTCLIENTIDHERE&scope=bot&permissions=0
-To add the bot to your Discord with 0 permissions. You will need the Manage Server role to do this.
-10) Run "node bot.js" to start the bot
+5) Click to reveal token (will be used in step 8)
+6) Rename the "storage.example" folder to "storage"
+7) Rename the ".example.env" file to ".env"
+8) Fill out the .env file with your specific server details. You will need to be in Discord Developer mode to do this. Find out how to get into developer mode here - https://discordia.me/developer-mode
+9) Run "npm install" in terminal. You will also need to install nodejs if you haven't already
+10) Get the client ID from where you found the token. Go to https://discordapp.com/oauth2/authorize?client_id=INSERTCLIENTIDHERE&scope=bot&permissions=0
+To add the bot to your Discord with 0 permissions. You will need the Manage Server role to do this
+11) Run "node bot.js" to start the bot
 
 ## Contributing
 We welcome all types of contributions to the ME-Bot. If you have a bug to report or feature to suggest, please create an issue on this Github repo.
