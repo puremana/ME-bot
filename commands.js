@@ -1131,60 +1131,89 @@ exports.functions = {
 
         var text = message.content.substring(PREFIX.length + 3);
 
-        for (name in pushes[message.channel.id]["queue"]) {
-            if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
-
-                //make sure it was same person who made
-                var userid = pushes[message.channel.id]["queue"][name]["id"];
-
-                if (userid != message.author.id) {
-                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
-                    return;
-                }
-
-                //if it is the one who is ready
-                if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
-        
-                    //add to current push list
-                    pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
-                    //delete from queue
-                    pushes[message.channel.id]["queue"].splice(name, 1);
-                    //if on invite list, delete
-                    for (person in pushes[message.channel.id]["invites"]) {
-                        if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
-                            pushes[message.channel.id]["invites"].splice(person, 1);
-                        }
-                    }
-
-                    fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
-                    rewriteEmbed(message);
-
-                    message.channel.send("Account name **" + text + "** has entered the guild.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
-                    log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-                    
-                    if (pushes[message.channel.id]["push time"] != 0) {
-                        setTimeout(function() {
-                            pingMember(message, text);
-                        }, pushes[message.channel.id]["push time"] * 60000);
-                    }
-                    
-                    return;
-                } 
-                else {
-                    message.channel.send("Account name **" + text + "** is not at the top of the queue.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
-                    return;
+        // If queue is empty, let them in
+        if (pushes[message.channel.id]["queue"].length === 0) {
+            //add to current push list
+            pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
+            //if on invite list, delete
+            for (person in pushes[message.channel.id]["invites"]) {
+                if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
+                    pushes[message.channel.id]["invites"].splice(person, 1);
                 }
             }
+
+            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+            rewriteEmbed(message);
+
+            message.channel.send("Account name **" + text + "** has entered the guild.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+            
+            if (pushes[message.channel.id]["push time"] != 0) {
+                setTimeout(function() {
+                    pingMember(message, text);
+                }, pushes[message.channel.id]["push time"] * 60000);
+            }
+            
+            return;
         }
-        message.channel.send("Could not find account name **" + text + "** in the queue.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        else {
+            for (name in pushes[message.channel.id]["queue"]) {
+                if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
+    
+                    //make sure it was same person who made
+                    var userid = pushes[message.channel.id]["queue"][name]["id"];
+    
+                    if (userid != message.author.id) {
+                        message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
+                            .then(m => m.delete(PUSHTIMEOUT))
+                            .catch(err => console.log(err));
+                        return;
+                    }
+    
+                    //if it is the one who is ready
+                    if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
+            
+                        //add to current push list
+                        pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
+                        //delete from queue
+                        pushes[message.channel.id]["queue"].splice(name, 1);
+                        //if on invite list, delete
+                        for (person in pushes[message.channel.id]["invites"]) {
+                            if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
+                                pushes[message.channel.id]["invites"].splice(person, 1);
+                            }
+                        }
+    
+                        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                        rewriteEmbed(message);
+    
+                        message.channel.send("Account name **" + text + "** has entered the guild.")
+                            .then(m => m.delete(PUSHTIMEOUT))
+                            .catch(err => console.log(err));
+                        log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                        
+                        if (pushes[message.channel.id]["push time"] != 0) {
+                            setTimeout(function() {
+                                pingMember(message, text);
+                            }, pushes[message.channel.id]["push time"] * 60000);
+                        }
+                        
+                        return;
+                    } 
+                    else {
+                        message.channel.send("Account name **" + text + "** is not at the top of the queue.")
+                            .then(m => m.delete(PUSHTIMEOUT))
+                            .catch(err => console.log(err));
+                        return;
+                    }
+                }
+            }
+            message.channel.send("Could not find account name **" + text + "** in the queue.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+        }
     },
     out: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
