@@ -6,7 +6,7 @@ var votes = require('./storage/votes.json');
 var pushes = require('./storage/pushes.json');
 const BOTNAME = setEnv(process.env.BOT_NAME, "Guild Bot");
 const PREFIX = setEnv(process.env.PREFIX, "$");
-const SERVERID = process.env.SERVER_ID;
+const SERVER_ID = process.env.SERVER_ID;
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
@@ -740,7 +740,7 @@ exports.functions = {
         }
 
         //send embed
-        reply(message, "Processing...")
+        message.channel.send("Processing...")
         .then(m => {        
             //create push
             var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
@@ -775,9 +775,8 @@ exports.functions = {
                 deleteEmbed(message);
 
                 delete pushes[p];
-                reply(message, "Push deleted.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                reply(message, "Push deleted.");
+
                 fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
                 log("<@" + message.author.id + "> has deleted a push in channel " + message.guild.channels.get(message.channel.id).toString());
                 return;
@@ -1130,86 +1129,75 @@ exports.functions = {
         }
 
         var text = message.content.substring(PREFIX.length + 3);
+        let letIn = false;
+        let idIndex;
 
-        // If queue is empty, let them in
-        if (pushes[message.channel.id]["queue"].length === 0) {
-            //add to current push list
-            pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
-            //if on invite list, delete
-            for (person in pushes[message.channel.id]["invites"]) {
-                if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
-                    pushes[message.channel.id]["invites"].splice(person, 1);
-                }
-            }
-
-            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
-            rewriteEmbed(message);
-
-            message.channel.send("Account name **" + text + "** has entered the guild.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-            log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-            
-            if (pushes[message.channel.id]["push time"] != 0) {
-                setTimeout(function() {
-                    pingMember(message, text);
-                }, pushes[message.channel.id]["push time"] * 60000);
-            }
-            
-            return;
+        // If queue and slots are empty, let them in
+        if ((pushes[message.channel.id]["queue"].length === 0) && (pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length)) {
+            letIn = true;
         }
         else {
             for (name in pushes[message.channel.id]["queue"]) {
                 if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
-    
-                    //make sure it was same person who made
-                    var userid = pushes[message.channel.id]["queue"][name]["id"];
-    
-                    if (userid != message.author.id) {
-                        message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
-                            .then(m => m.delete(PUSHTIMEOUT))
-                            .catch(err => console.log(err));
-                        return;
-                    }
-    
-                    //if it is the one who is ready
-                    if (name < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
-            
-                        //add to current push list
-                        pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
-                        //delete from queue
-                        pushes[message.channel.id]["queue"].splice(name, 1);
-                        //if on invite list, delete
-                        for (person in pushes[message.channel.id]["invites"]) {
-                            if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
-                                pushes[message.channel.id]["invites"].splice(person, 1);
-                            }
-                        }
-    
-                        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
-                        rewriteEmbed(message);
-    
-                        message.channel.send("Account name **" + text + "** has entered the guild.")
-                            .then(m => m.delete(PUSHTIMEOUT))
-                            .catch(err => console.log(err));
-                        log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
-                        
-                        if (pushes[message.channel.id]["push time"] != 0) {
-                            setTimeout(function() {
-                                pingMember(message, text);
-                            }, pushes[message.channel.id]["push time"] * 60000);
-                        }
-                        
-                        return;
-                    } 
-                    else {
-                        message.channel.send("Account name **" + text + "** is not at the top of the queue.")
-                            .then(m => m.delete(PUSHTIMEOUT))
-                            .catch(err => console.log(err));
-                        return;
-                    }
+                    idIndex = name;
+                    letIn = true;
+                    break;
                 }
             }
+        }
+
+        if (letIn) {
+            //make sure it was same person who made
+            if (pushes[message.channel.id]["queue"].length !== 0) {
+                var userid = pushes[message.channel.id]["queue"][idIndex]["id"];
+
+                if (userid != message.author.id) {
+                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
+                        .then(m => m.delete(PUSHTIMEOUT))
+                        .catch(err => console.log(err));
+                    return;
+                }
+            }
+            
+
+            //if it is the one who is ready
+            if ((idIndex < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) || pushes[message.channel.id]["queue"].length === 0) {
+    
+                //add to current push list
+                pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
+                //delete from queue
+                pushes[message.channel.id]["queue"].splice(idIndex, 1);
+                //if on invite list, delete
+                for (person in pushes[message.channel.id]["invites"]) {
+                    if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
+                        pushes[message.channel.id]["invites"].splice(person, 1);
+                    }
+                }
+
+                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                rewriteEmbed(message);
+
+                message.channel.send("Account name **" + text + "** has entered the guild.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+                
+                if (pushes[message.channel.id]["push time"] != 0) {
+                    setTimeout(function() {
+                        pingMember(message, text);
+                    }, pushes[message.channel.id]["push time"] * 60000);
+                }
+                
+                return;
+            } 
+            else {
+                message.channel.send("Account name **" + text + "** is not at the top of the queue.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+        }
+        else {
             message.channel.send("Could not find account name **" + text + "** in the queue.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
@@ -1542,13 +1530,13 @@ function createPushEmbed(id) {
         }
 
         if (text != "") {
-            reply(message, text)
+            message.channel.send(text)
                 .then(m => m.delete(PUSHTIMEOUT * 10))
                 .catch(err => console.log(err));
         }
     }
     function log(text) {
-        bot.guilds.find(name => name.id === SERVERID).channels.find(channel => channel.id === PUSH_LOG_ID).send(text)
+        bot.guilds.find(name => name.id === SERVER_ID).channels.find(channel => channel.id === PUSH_LOG_ID).send(text)
             .catch(err => console.log(err));
     }
     function pingMember(message, name) {
