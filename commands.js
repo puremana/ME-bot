@@ -1129,6 +1129,14 @@ exports.functions = {
         }
 
         var text = message.content.substring(PREFIX.length + 3);
+
+        if (!text.replace(/\s/g, '').length) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "in AccountName`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
         let letIn = false;
         let idIndex;
 
