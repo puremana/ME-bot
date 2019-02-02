@@ -238,7 +238,7 @@ exports.functions = {
             }
             var command = "\'" + args[1].toLowerCase() + "': '" + desc + "',";
             customCommands[args[1].toLowerCase()] = desc;
-            fs.writeFile("storage/custom.json", JSON.stringify(customCommands), "utf8");
+            saveJson('custom', customCommands);
             reply(message, "Command " + PREFIX + args[1] + " added.");
         }
         else {
@@ -256,7 +256,7 @@ exports.functions = {
                 for (c in customCommands) {
                     if (args[1].toLowerCase() == c) {
                         delete customCommands[c];
-                        fs.writeFile("storage/custom.json", JSON.stringify(customCommands), "utf8");
+                        saveJson('custom', customCommands);
                         reply(message, "Command " + PREFIX + args[1] + " removed.");
                         return;
                     }
@@ -327,7 +327,7 @@ exports.functions = {
             return;
         }
         votes[rawSplit[1]] = vJson;
-        fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+        saveJson('votes', votes);
         //display the new poll
         displayPoll(message, rawSplit[1]);
     },
@@ -398,7 +398,7 @@ exports.functions = {
                     }
                     poll[num].push(message.author.id);
                 }
-                fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+                saveJson('votes', votes);
                 if (theVotes.length == 1) {
                     reply(message, ':white_check_mark: Your vote has been registered.');
                 }
@@ -480,7 +480,7 @@ exports.functions = {
                     //close poll
                     votes[v]["closed"] = true;
                     reply(message, "Poll **" + rawSplit[1] + "** is now closed.");
-                    fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+                    saveJson('votes', votes);
                     return;
                 }
                 else {
@@ -510,7 +510,7 @@ exports.functions = {
                     //open poll
                     votes[v]["closed"] = false;
                     reply(message, "Poll **" + rawSplit[1] + "** has been reopened.");
-                    fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+                    saveJson('votes', votes);
                     return;
                 }
                 else {
@@ -535,7 +535,7 @@ exports.functions = {
                     //delete poll
                     delete votes[v];
                     reply(message, "Poll **" + rawSplit[1] + "** is now deleted.");
-                    fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+                    saveJson('votes', votes);
                     return;
                 }
                 else {
@@ -564,7 +564,7 @@ exports.functions = {
                     }
                 }
                 reply(message, "Your responses for poll **" + rawSplit[1] + "** have been reset.");
-                fs.writeFile("storage/votes.json", JSON.stringify(votes), "utf8");
+                saveJson('votes', votes);
             }
         }
     },
@@ -751,7 +751,7 @@ exports.functions = {
                 return;
             }
             pushes[message.channel.id] = pJson;
-            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+            saveJson('pushes', pushes);
 
             //make embed
             var embed = createPushEmbed(message.channel.id);
@@ -777,7 +777,7 @@ exports.functions = {
                 delete pushes[p];
                 reply(message, "Push deleted.");
 
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
                 log("<@" + message.author.id + "> has deleted a push in channel " + message.guild.channels.get(message.channel.id).toString());
                 return;
             }
@@ -814,7 +814,7 @@ exports.functions = {
         }
 
         pushes[message.channel.id]["invites"].push({id : message.author.id, name : text});
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        saveJson('pushes', pushes);
         rewriteEmbed(message);
 
         message.channel.send("Username " + text + " has been added to the invite list.")
@@ -849,7 +849,7 @@ exports.functions = {
         }
 
         pushes[message.channel.id]["queue"].push({id : message.author.id, name : text});
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        saveJson('pushes', pushes);
         rewriteEmbed(message);
 
         message.channel.send("Username " + text + " has been added to the queue.")
@@ -884,7 +884,7 @@ exports.functions = {
                 }
 
                 pushes[message.channel.id]["queue"].splice(name, 1);
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
 
                 rewriteEmbed(message);
 
@@ -923,7 +923,7 @@ exports.functions = {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
 
                 pushes[message.channel.id]["queue"].splice(name, 1);
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
 
                 rewriteEmbed(message);
 
@@ -965,7 +965,7 @@ exports.functions = {
                 var userid = pushes[message.channel.id]["invites"][name]["id"];
 
                 pushes[message.channel.id]["invites"].splice(name, 1);
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
 
                 rewriteEmbed(message);
 
@@ -1025,7 +1025,7 @@ exports.functions = {
         }
 
         pushes[message.channel.id]["invites"].splice(0, num);
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        saveJson('pushes', pushes);
 
         rewriteEmbed(message);
 
@@ -1062,7 +1062,7 @@ exports.functions = {
 
         //update slots
         pushes[message.channel.id]["slots"] = num;
-        fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+        saveJson('pushes', pushes);
 
         rewriteEmbed(message);
 
@@ -1091,7 +1091,7 @@ exports.functions = {
 
         if (answer === 'yes' || answer === 'true') {
             pushes[message.channel.id]["showcommands"] = true;
-            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+            saveJson('pushes', pushes);
     
             rewriteEmbed(message);
 
@@ -1101,7 +1101,7 @@ exports.functions = {
         }
         else if (answer === 'no' || answer === 'false') {
             pushes[message.channel.id]["showcommands"] = false;
-            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+            saveJson('pushes', pushes);
     
             rewriteEmbed(message);
 
@@ -1182,7 +1182,7 @@ exports.functions = {
                     }
                 }
 
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
                 rewriteEmbed(message);
 
                 message.channel.send("Account name **" + text + "** has entered the guild.")
@@ -1235,7 +1235,7 @@ exports.functions = {
                 }
                     
                 pushes[message.channel.id]["currently"].splice(name, 1);
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
                 rewriteEmbed(message);
         
                 message.channel.send("Account name **" + text + "** has exited the guild.")
@@ -1273,7 +1273,7 @@ exports.functions = {
             if (text.toLowerCase() === pushes[message.channel.id]["currently"][name]["name"].toLowerCase()) {
                     
                 pushes[message.channel.id]["currently"].splice(name, 1);
-                fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+                saveJson('pushes', pushes);
                 rewriteEmbed(message);
         
                 message.channel.send("Account name **" + text + "** has been removed from the guild.")
@@ -1316,7 +1316,7 @@ exports.functions = {
             })
             .catch(console.error);
             pushes[id]["messageid"] = m.id;
-            fs.writeFile("storage/pushes.json", JSON.stringify(pushes), "utf8");
+            saveJson('pushes', pushes);
 
             //make embed
             var embed = createPushEmbed(id);
@@ -1571,4 +1571,16 @@ function createPushEmbed(id) {
     function reply(message, content) {
         message.channel.send(content)
             .catch(err => console.log(err));
+    }
+
+    function saveJson(file, data) {
+        fs.writeFile("storage/" + file + ".json", JSON.stringify(data), "utf8", (err) => {
+            if (err) {
+                console.log("There was an error saving the file. Error: "  + err);
+                message.channel.send("There was an error saving the " + file + " file. Please contact the bot owner.")
+                    .then(m => m.delete(PUSHTIMEOUT))
+                    .catch(err => console.log(err));
+                return;
+            }
+        });
     }
