@@ -42,7 +42,7 @@ if (WEEKLIES) {
     // Scheduler for Weeklies
     var weekliesRule = new schedule.RecurrenceRule();
     weekliesRule.dayOfWeek = [2];
-    weekliesRule.hour = [0];
+    weekliesRule.hour = [2];
     weekliesRule.minute = 0;
     // Set to Seattle Timezone
     weekliesRule.tz = 'America/Dawson';
@@ -57,7 +57,7 @@ if (WEEKLIES) {
     // Scheduler for After Weeklies
     var afterWeekliesRule = new schedule.RecurrenceRule();
     afterWeekliesRule.dayOfWeek = [3];
-    afterWeekliesRule.hour = [12];
+    afterWeekliesRule.hour = [14];
     afterWeekliesRule.minute = 0;
     // Set to Seattle Timezone
     afterWeekliesRule.tz = 'America/Dawson';
