@@ -832,6 +832,11 @@ exports.functions = {
 
         var text = message.content.substring(PREFIX.length + 10);
 
+        // If no username, use member nickname
+        if (!text.replace(/\s/g, '').length) {
+            text = message.member.displayName;
+        }
+
         for (name in pushes[message.channel.id]["queue"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
                 message.channel.send("Username " + text + " is already in the queue.")
@@ -870,6 +875,11 @@ exports.functions = {
         }
 
         var text = message.content.substring(PREFIX.length + 11);
+
+        // If no username, use member nickname
+        if (!text.replace(/\s/g, '').length) {
+            text = message.member.displayName;
+        }
 
         for (name in pushes[message.channel.id]["queue"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
@@ -1130,11 +1140,9 @@ exports.functions = {
 
         var text = message.content.substring(PREFIX.length + 3);
 
+        // If no username, use member nickname
         if (!text.replace(/\s/g, '').length) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "in AccountName`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-            return;
+            text = message.member.displayName;
         }
 
         let letIn = false;
@@ -1221,6 +1229,11 @@ exports.functions = {
         }
 
         var text = message.content.substring(PREFIX.length + 4);
+
+        // If no username, use member nickname
+        if (!text.replace(/\s/g, '').length) {
+            text = message.member.displayName;
+        }
 
         for (name in pushes[message.channel.id]["currently"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["currently"][name]["name"].toLowerCase()) {
