@@ -1000,6 +1000,12 @@ exports.functions = {
                 message.channel.send("Username **" + text + "** has been sent an invite - <@" + userid + ">")
                     .then(m => m.delete(PUSHTIMEOUT * 10))
                     .catch(err => console.log(err));
+
+                let user = bot.users.find(user => user.id === userid);
+                if (user) {
+                    user.send("Username **" + text + "** has been sent an invite in " + message.guild.channels.get(message.channel.id).toString());
+                }
+                    
                 log("<@" + message.author.id + "> has sent an invite to Discord username <@" + userid + "> , account username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
                 return;
             }
@@ -1563,6 +1569,10 @@ function createPushEmbed(id) {
         if (Object.keys(pushes[id]["queue"]).length != 0) {
             for (member in pushes[id]["queue"]) {
                 if (member < sSlots) {
+                    let user = bot.users.find(user => user.id === pushes[id]["queue"][member]["id"]);
+                    if (user) {
+                        user.send("Account name **" + pushes[id]["queue"][member]["name"] + "** is ready for pushing in " + message.guild.channels.get(message.channel.id).toString());
+                    }
                     text += "Account name **" + pushes[id]["queue"][member]["name"] + "** is ready for pushing <@" + pushes[id]["queue"][member]["id"] + ">\n";
                 } 
             }
