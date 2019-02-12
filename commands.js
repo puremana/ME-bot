@@ -822,7 +822,10 @@ exports.functions = {
             .catch(err => console.log(err));
         log("<@" + message.author.id + "> has signed up in with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
-    queuejoin: function(message) {
+    queue: function(message) {
+        exports.functions.queuejoin(message, 6);
+    },
+    queuejoin: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             message.channel.send("Could not find a push in this channel.")
                 .then(m => m.delete(PUSHTIMEOUT))
@@ -830,7 +833,13 @@ exports.functions = {
             return;
         }
 
-        var text = message.content.substring(PREFIX.length + 10);
+        var text;
+        if (prefixText !== undefined) {
+            text = message.content.substring(PREFIX.length + prefixText);
+        }
+        else {
+            text = message.content.substring(PREFIX.length + 10);
+        }
 
         // If no username, use member nickname
         if (!text.replace(/\s/g, '').length) {
@@ -866,15 +875,24 @@ exports.functions = {
             checkQueue(message);
         }
     },
-    queueleave: function(message) {
+    leave: function(message) {
+        exports.functions.queueleave(message, 6);
+    },
+    queueleave: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             message.channel.send("Could not find a push in this channel.")
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
         }
-
-        var text = message.content.substring(PREFIX.length + 11);
+        
+        var text;
+        if (prefixText !== undefined) {
+            text = message.content.substring(PREFIX.length + prefixText);
+        }
+        else {
+            text = message.content.substring(PREFIX.length + 11);
+        }
 
         // If no username, use member nickname
         if (!text.replace(/\s/g, '').length) {
