@@ -1363,6 +1363,61 @@ exports.functions = {
         })
         .catch(err => console.log(err));
     },
+    purge: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            message.channel.send("Could not find a push in this channel.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+
+            return;
+        }
+
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
+            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var text = parseInt(message.content.substring(PREFIX.length + 6), 10);
+
+        if (!Number.isInteger(text)) {
+            message.channel.send("Please use this command in the following format `" + PREFIX + "purge NumberOfMessagesToDelete`")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        if (text > 99) {
+            message.channel.send("Please delete less than 100 messages at a time.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        if (text < -1) {
+            message.channel.send("Please use values greater than 1.")
+                .then(m => m.delete(PUSHTIMEOUT))
+                .catch(err => console.log(err));
+            return;
+        }
+
+        var msgsToDelete = [];
+
+        message.channel.fetchMessages({limit: text + 1})
+            .then(msgs => {
+                let arr = msgs.array();
+                for (let i = 1; i < arr.length; i++) {
+                    if (arr[i].id == pushes[message.channel.id]["messageid"]) {
+                        break;
+                    }
+                    msgsToDelete.push(arr[i]);
+                }
+
+                message.channel.bulkDelete(msgsToDelete);
+            })
+            .catch(err => console.log("Unknown message error (message was deleted before it could be deleted by purge)"));
+    },
 
     //fun
     cat: function(message) {
