@@ -95,6 +95,7 @@ try {
         //Hashmap stuff
         if (hashArray.indexOf(args[0].toLowerCase()) > -1) {
             try {
+                message.content = trimMultipleSpaces(message.content);
                 commands.functions[args[0].toLowerCase()](message);
             } catch (err) {
                 console.log(err)
@@ -128,4 +129,8 @@ var deleteMessage = function(message) {
 // If the env variable is not set, use a default variable
 function setEnv(envVariable, defaultVariable) {
     return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
+}
+
+function trimMultipleSpaces(content) {
+    return content.replace(/\s\s+/g, ' ');
 }
