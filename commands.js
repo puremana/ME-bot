@@ -648,7 +648,7 @@ exports.functions = {
 
         stringDiff = stringDiff + minutes + " minutes, and " + seconds + " seconds";
 
-        message.channel.send(stringDiff);
+        reply(stringDiff);
     },
 
     //weeklies
@@ -696,9 +696,7 @@ exports.functions = {
     //push
     pushsetup: function(message) {
         if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
-            message.channel.send("You require the Leadership role to create a push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the Leadership role to create a push.");
             return;
         }
         //creates default messages
@@ -707,34 +705,26 @@ exports.functions = {
 
         //correct format
         if (rawSplit.length != 11 && rawSplit.length != 13) {
-            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "time limit" "leader role name" "push description" "*(optional)* inviter role name"`')
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, 'Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "time limit" "leader role name" "push description" "*(optional)* inviter role name"`');
             return;
         }
 
         //number as argument
         if (isNaN(rawSplit[1])) {
-            message.channel.send("Please make sure the first argument (available slots) is a number before creating the poll.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please make sure the first argument (available slots) is a number before creating the poll.");
             return;
         }
 
         //number as argument
         if (isNaN(rawSplit[5])) {
-            message.channel.send("Please make sure the third argument (time per push) is a number (minutes) before creating the poll.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please make sure the third argument (time per push) is a number (minutes) before creating the poll.");
             return;
         }
 
         //push has been created already
         for (p in pushes) {
             if (p == message.channel.id) {
-                message.channel.send("A push has already been created in this channel, please use `" + PREFIX + "pushdelete` to delete.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "A push has already been created in this channel, please use `" + PREFIX + "pushdelete` to delete.");
                 return;
             }
         }
@@ -745,9 +735,7 @@ exports.functions = {
             //create push
             var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviters" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
             if (!verifyJson(pJson)) {
-                message.channel.send("Push could not be saved. Please try again.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Push could not be saved. Please try again.");
                 return;
             }
             pushes[message.channel.id] = pJson;
@@ -764,9 +752,7 @@ exports.functions = {
     },
     pushdelete: function(message) {
         if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
-            message.channel.send("You require the Leadership role to delete a push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the Leadership role to delete a push.");
             return;
         }
 
@@ -783,15 +769,11 @@ exports.functions = {
             }
         }
 
-        message.channel.send("Could not find a push in this channel.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Could not find a push in this channel.");
     },
     signup: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
@@ -799,17 +781,13 @@ exports.functions = {
 
         for (name in pushes[message.channel.id]["invites"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["invites"][name]["name"].toLowerCase()) {
-                message.channel.send("Username " + text + " is already on the invite list.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Username " + text + " is already on the invite list.");
                 return;
             }
         }
 
         if (!text.replace(/\s/g, '').length) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "signup AccountName`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "signup AccountName`");
             return;
         }
 
@@ -817,16 +795,12 @@ exports.functions = {
         saveJson('pushes', pushes);
         rewriteEmbed(message);
 
-        message.channel.send("Username " + text + " has been added to the invite list.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Username " + text + " has been added to the invite list.");
 
         if (pushes[message.channel.id]["inviters"] != null) {
             let inviterRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === pushes[message.channel.id]["inviters"]);
             if (inviterRole) {
-            message.channel.send("<@&" + inviterRole.id + "> Username **" + text + "** would like an invite.")
-                .then(m => m.delete(PUSHTIMEOUT * 10))
-                .catch(err => console.log(err));
+                pushReplyExtended(message, "<@&" + inviterRole.id + "> Username **" + text + "** would like an invite.");
             }
             
         }
@@ -838,9 +812,7 @@ exports.functions = {
     },
     queuejoin: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
@@ -859,17 +831,13 @@ exports.functions = {
 
         for (name in pushes[message.channel.id]["queue"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
-                message.channel.send("Username " + text + " is already in the queue.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Username " + text + " is already in the queue.");
                 return;
             }
         }
 
         if (!text.replace(/\s/g, '').length) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "queuejoin AccountName`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "queuejoin AccountName`");
             return;
         }
 
@@ -877,9 +845,7 @@ exports.functions = {
         saveJson('pushes', pushes);
         rewriteEmbed(message);
 
-        message.channel.send("Username " + text + " has been added to the queue.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Username " + text + " has been added to the queue.");
         log("<@" + message.author.id + "> has joined the queue with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
 
         if (Object.keys(pushes[message.channel.id]["queue"]).length <= pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) {
@@ -891,9 +857,7 @@ exports.functions = {
     },
     queueleave: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
         
@@ -916,9 +880,7 @@ exports.functions = {
                 var userid = pushes[message.channel.id]["queue"][name]["id"];
 
                 if (userid != message.author.id) {
-                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user. If you have the " + pushes[message.channel.id]["leaders"] + " role, please use `" + PREFIX + "queueremove AccountName`.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
+                    pushReply(message, "Username **" + text + "** was added to the queue by a different Discord user. If you have the " + pushes[message.channel.id]["leaders"] + " role, please use `" + PREFIX + "queueremove AccountName`.");
                     return;
                 }
 
@@ -927,9 +889,7 @@ exports.functions = {
 
                 rewriteEmbed(message);
 
-                message.channel.send("Username **" + text + "** has been removed from the queue.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Username **" + text + "** has been removed from the queue.");
                 log("<@" + message.author.id + "> has removed account username **" + text + "** from the queue in channel " + message.guild.channels.get(message.channel.id).toString());
                 
                 //if leaving has an effect on who can push
@@ -943,16 +903,12 @@ exports.functions = {
     },
     queueremove: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to remove other players from this push queue.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to remove other players from this push queue.");
             return;
         }
 
@@ -966,9 +922,7 @@ exports.functions = {
 
                 rewriteEmbed(message);
 
-                message.channel.send("Username **" + text + "** has been removed from the queue.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Username **" + text + "** has been removed from the queue.");
                 log("<@" + message.author.id + "> has removed account username **" + text + "** from the queue in channel " + message.guild.channels.get(message.channel.id).toString());
                 
                 //if leaving has an effect on who can push
@@ -982,17 +936,12 @@ exports.functions = {
     },
     sent: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
@@ -1008,9 +957,7 @@ exports.functions = {
 
                 rewriteEmbed(message);
 
-                message.channel.send("Username **" + text + "** has been sent an invite - <@" + userid + ">")
-                    .then(m => m.delete(PUSHTIMEOUT * 10))
-                    .catch(err => console.log(err));
+                pushReplyExtended(message, "Username **" + text + "** has been sent an invite - <@" + userid + ">");
 
                 let user = bot.users.find(user => user.id === userid);
                 if (user) {
@@ -1022,41 +969,28 @@ exports.functions = {
             }
         }
         
-        message.channel.send("Could not find a username " + text + " in the invite list.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
-        
+        pushReply(message, "Could not find a username " + text + " in the invite list.");
     },
     senttop: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
         var num = message.content.substring(PREFIX.length + 8);
 
         if (!num.replace(/\s/g, '').length) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`");
             return;
         }
 
         if (isNaN(num)) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "senttop NumberOfPeopleToDelete`");
             return;
         }
 
@@ -1074,34 +1008,24 @@ exports.functions = {
 
         rewriteEmbed(message);
 
-        message.channel.send(num + " usernames have been sent an invite. \n" + tagText)
-            .then(m => m.delete(PUSHTIMEOUT * 10))
-            .catch(err => console.log(err));
+        pushReplyExtended(message, num + " usernames have been sent an invite. \n" + tagText);
         log("<@" + message.author.id + "> has invited **" + num + " players** \n" + tagText + "\nIn channel " + message.guild.channels.get(message.channel.id).toString());
     },
     updateslots: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
         var num = message.content.substring(PREFIX.length + 12);
 
         if (isNaN(num)) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "updateslots NumberOfSlots`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "updateslots NumberOfSlots`");
             return;
         }
 
@@ -1111,24 +1035,17 @@ exports.functions = {
 
         rewriteEmbed(message);
 
-        message.channel.send("Available guild spots have been updated.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Available guild spots have been updated.");
         log("<@" + message.author.id + "> has updated slots to **" + num + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     showcommands: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
@@ -1140,9 +1057,7 @@ exports.functions = {
     
             rewriteEmbed(message);
 
-            message.channel.send("The push message should now show commands.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+            pushReply(message, "The push message should now show commands.");
         }
         else if (answer === 'no' || answer === 'false') {
             pushes[message.channel.id]["showcommands"] = false;
@@ -1150,15 +1065,10 @@ exports.functions = {
     
             rewriteEmbed(message);
 
-            message.channel.send("The push message should now not show any commands.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+            pushReply(message, "The push message should now not show any commands.");
         }
         else {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "showcommands yes`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "showcommands yes`");
             return;
         }
 
@@ -1166,10 +1076,7 @@ exports.functions = {
     },
     in: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
@@ -1203,9 +1110,7 @@ exports.functions = {
                 var userid = pushes[message.channel.id]["queue"][idIndex]["id"];
 
                 if (userid != message.author.id) {
-                    message.channel.send("Username **" + text + "** was added to the queue by a different Discord user.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
+                    pushReply(message, "Username **" + text + "** was added to the queue by a different Discord user.");
                     return;
                 }
             }
@@ -1228,9 +1133,7 @@ exports.functions = {
                 saveJson('pushes', pushes);
                 rewriteEmbed(message);
 
-                message.channel.send("Account name **" + text + "** has entered the guild.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Account name **" + text + "** has entered the guild.");
                 log("<@" + message.author.id + "> has entered the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
                 
                 if (pushes[message.channel.id]["push time"] != 0) {
@@ -1242,24 +1145,17 @@ exports.functions = {
                 return;
             } 
             else {
-                message.channel.send("Account name **" + text + "** is not at the top of the queue.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Account name **" + text + "** is not at the top of the queue.");
                 return;
             }
         }
         else {
-            message.channel.send("Could not find account name **" + text + "** in the queue.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find account name **" + text + "** in the queue.");
         }
     },
     out: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
@@ -1276,9 +1172,7 @@ exports.functions = {
                 var userid = pushes[message.channel.id]["currently"][name]["id"];
 
                 if (userid != message.author.id) {
-                    message.channel.send("Username **" + text + "** was added to the current push by a different Discord user.")
-                        .then(m => m.delete(PUSHTIMEOUT))
-                        .catch(err => console.log(err));
+                    pushReply(message, "Username **" + text + "** was added to the current push by a different Discord user.");
                     return;
                 }
                     
@@ -1286,32 +1180,24 @@ exports.functions = {
                 saveJson('pushes', pushes);
                 rewriteEmbed(message);
         
-                message.channel.send("Account name **" + text + "** has exited the guild.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Account name **" + text + "** has exited the guild.");
                 log("<@" + message.author.id + "> has exited the guild on account name **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
                 
                 checkQueue(message);
                 return;
             }
         }
-        message.channel.send("Could not find account name **" + text + "** in the push.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Could not find account name **" + text + "** in the push.");
     },
     currentremove: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Could not find a push in this channel.");
 
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
@@ -1324,32 +1210,23 @@ exports.functions = {
                 saveJson('pushes', pushes);
                 rewriteEmbed(message);
         
-                message.channel.send("Account name **" + text + "** has been removed from the guild.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
+                pushReply(message, "Account name **" + text + "** has been removed from the guild.");
                 log("<@" + message.author.id + "> has removed account name **" + text + "** from the guild in channel " + message.guild.channels.get(message.channel.id).toString());
                 
                 checkQueue(message);
                 return;
             }
         }
-        message.channel.send("Could not find account name **" + text + "** in the push.")
-            .then(m => m.delete(PUSHTIMEOUT))
-            .catch(err => console.log(err));
+        pushReply(message, "Could not find account name **" + text + "** in the push.");
     },
     createnewmessage: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"])) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear signups for this push.");
             return;
         }
 
@@ -1376,40 +1253,29 @@ exports.functions = {
     },
     purge: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
-            message.channel.send("Could not find a push in this channel.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
-
+            pushReply(message, "Could not find a push in this channel.");
             return;
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-            message.channel.send("You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.");
             return;
         }
 
         var text = parseInt(message.content.substring(PREFIX.length + 6), 10);
 
         if (!Number.isInteger(text)) {
-            message.channel.send("Please use this command in the following format `" + PREFIX + "purge NumberOfMessagesToDelete`")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please use this command in the following format `" + PREFIX + "purge NumberOfMessagesToDelete`");
             return;
         }
 
         if (text > 99) {
-            message.channel.send("Please delete less than 100 messages at a time.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please delete less than 100 messages at a time.");
             return;
         }
 
         if (text < -1) {
-            message.channel.send("Please use values greater than 1.")
-                .then(m => m.delete(PUSHTIMEOUT))
-                .catch(err => console.log(err));
+            pushReply(message, "Please use values greater than 1.");
             return;
         }
 
@@ -1645,9 +1511,7 @@ function createPushEmbed(id) {
         }
 
         if (text != "") {
-            message.channel.send(text)
-                .then(m => m.delete(PUSHTIMEOUT * 10))
-                .catch(err => console.log(err));
+            pushReplyExtended(message, text);
         }
     }
     function log(text) {
@@ -1655,14 +1519,12 @@ function createPushEmbed(id) {
             .catch(err => console.log(err));
     }
     function pingMember(message, name) {
-        //if the member is still in the guild
+        // If the member is still in the guild
         for (user in pushes[message.channel.id]["currently"]) {
             if (name.toLowerCase() === pushes[message.channel.id]["currently"][user]["name"].toLowerCase()) {
 
-                //tell them to get out of there
-                message.channel.send("<@" + message.author.id + "> your account name " + name + " has reached the time limit in the guild for this push. Please exit the guild and use the `" + PREFIX + "out` command.")
-                .then(m => m.delete(PUSHTIMEOUT * 10))
-                .catch(err => console.log(err));
+                // Tell them to get out of there
+                pushReplyExtended(message, "<@" + message.author.id + "> your account name " + name + " has reached the time limit in the guild for this push. Please exit the guild and use the `" + PREFIX + "out` command.");
 
                 log("<@" + message.author.id + "> on account name " + name + " has reached the time limit for the guild push in channel " + message.guild.channels.get(message.channel.id).toString());
 
@@ -1680,14 +1542,23 @@ function createPushEmbed(id) {
             .catch(err => console.log(err));
     }
 
+    function pushReply(message, content) {
+        message.channel.send(content)
+            .then(m => m.delete(PUSHTIMEOUT))
+            .catch(err => console.log(err));
+    }
+
+    function pushReplyExtended(message, content) {
+        message.channel.send(content)
+            .then(m => m.delete(PUSHTIMEOUT * 10))
+            .catch(err => console.log(err));
+    }
+
     function saveJson(file, data) {
         fs.writeFile("storage/" + file + ".json", JSON.stringify(data), "utf8", (err) => {
             if (err) {
                 console.log("There was an error saving the file. Error: "  + err);
-                message.channel.send("There was an error saving the " + file + " file. Please contact the bot owner.")
-                    .then(m => m.delete(PUSHTIMEOUT))
-                    .catch(err => console.log(err));
-                return;
+                pushReply(message, "There was an error saving the " + file + " file. Please contact the bot owner.");
             }
         });
     }
