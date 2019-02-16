@@ -52,7 +52,7 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `trello`
 
 - Push Commands
-  - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push"` *(Admin only)*
+  - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push" "(optional) inviter role name"` *(Admin only)*
   - `pushdelete`
   - `sent` - `sent AccountName` *(Leaders only)*
   - `senttop` - `senttop NumberOfPopleToDelete` *(Leaders only)*

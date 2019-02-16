@@ -93,7 +93,7 @@ exports.functions = {
                 additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                 PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                 additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
-                pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" \n' +
+                pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" "(optional) inviter role name" \n' +
                 PREFIX + 'pushdelete \n';
             }
             else {
@@ -706,8 +706,8 @@ exports.functions = {
         var rawSplit = message.content.split("\"");
 
         //correct format
-        if (rawSplit.length != 11) {
-            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "time limit" "leader role name" "push description"`')
+        if (rawSplit.length != 11 && rawSplit.length != 13) {
+            message.channel.send('Please make use the command in the following format, `' + PREFIX + 'pushsetup "available slots" "push end date" "time limit" "leader role name" "push description" "*(optional)* inviter role name"`')
                 .then(m => m.delete(PUSHTIMEOUT))
                 .catch(err => console.log(err));
             return;
@@ -743,7 +743,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviters" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
             if (!verifyJson(pJson)) {
                 message.channel.send("Push could not be saved. Please try again.")
                     .then(m => m.delete(PUSHTIMEOUT))
@@ -820,6 +820,17 @@ exports.functions = {
         message.channel.send("Username " + text + " has been added to the invite list.")
             .then(m => m.delete(PUSHTIMEOUT))
             .catch(err => console.log(err));
+
+        if (pushes[message.channel.id]["inviters"] != null) {
+            let inviterRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === pushes[message.channel.id]["inviters"]);
+            if (inviterRole) {
+            message.channel.send("<@&" + inviterRole.id + "> Username **" + text + "** would like an invite.")
+                .then(m => m.delete(PUSHTIMEOUT * 10))
+                .catch(err => console.log(err));
+            }
+            
+        }
+
         log("<@" + message.author.id + "> has signed up in with username **" + text + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
     queue: function(message) {
