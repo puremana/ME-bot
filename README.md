@@ -59,6 +59,8 @@ All commands start with the prefix allocated in the bot.js and command.js files.
   - `queueremove` - `queueremove AccountName` *(Leaders only)*
   - `showcommands` - `showcommands yes/no` *(Leaders only)*
   - `createnewmessage` *(Leaders only)*
+  - `purge` - `purge NumberOfMessages` *(Leaders only)*
+  - `move` - `move "AccountName" NumberInQueue` *(Leaders only)*
   - `signup` - `signup AccountName`
   - `queuejoin` - `queuejoin AccountName`
   - `queueleave` - `queueleave AccountName`

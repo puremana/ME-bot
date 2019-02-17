@@ -133,12 +133,14 @@ exports.functions = {
         PREFIX + 'votedelete - `' + PREFIX + 'votedelete "Name of Poll"` \n' +
         PREFIX + 'votereset - `' + PREFIX + 'votereset "Name of Poll"` \n';
 
-        pushCommands += PREFIX + "sent - " + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
+        pushCommands += PREFIX + "sent - `" + PREFIX + "sent AccountName` *(Leaders only)* \n" + 
         PREFIX + "senttop - `" + PREFIX + "senttop NumberOfPeopleToDelete` *(Leaders only)* \n" +
         PREFIX + "queueremove - `" + PREFIX + "queueremove AccountName` *(Leaders only)* \n" +
         PREFIX + "updateslots - `" + PREFIX + "updateslots AvailableSlots` *(Leaders only)* \n" +
         PREFIX + "showcommands - `" + PREFIX + "showcommands yes/no` *(Leaders only)* \n" +
         PREFIX + "createnewmessage - `" + PREFIX + "createnewmessage` *(Leaders only)* \n" +
+        PREFIX + "purge - `" + PREFIX + "purge NumberOfMessages` *(Leaders only)* \n" +
+        PREFIX + 'move - `' + PREFIX + 'move "AccountName" NumberInQueue` *(Leaders only)* \n' +
         PREFIX + "signup - `" + PREFIX + "signup AccountName` \n" + 
         PREFIX + "queuejoin - `" + PREFIX + "queuejoin AccountName` \n" + 
         PREFIX + "queueleave - `" + PREFIX + "queueleave AccountName` \n" + 
@@ -1460,7 +1462,9 @@ function createPushEmbed(id) {
     '`' + PREFIX + 'updateslots Number` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' + 
     '`' + PREFIX + 'showcommands yes/no` *(' + pushes[id]["leaders"] + ' only)* \n' +
-    '`' + PREFIX + 'createnewmessage` *(' + pushes[id]["leaders"] + ' only)*';
+    '`' + PREFIX + 'createnewmessage` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'purge NumberOfMessages` *(Leaders only)* \n' +
+    '`' + PREFIX + 'move "AccountName" NumberInQueue` *(Leaders only)*';
 
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
         '`' + PREFIX + 'queuejoin AccountName` \n' +
