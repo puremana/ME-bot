@@ -1295,6 +1295,58 @@ exports.functions = {
             })
             .catch(err => console.log("Unknown message error (message was deleted before it could be deleted by purge)"));
     },
+    move: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.");
+            return;
+        }
+
+        var rawSplit = message.content.split("\"");
+
+        if (rawSplit.length != 3) {
+            pushReply(message, 'Please use this command in the following format `' + PREFIX + 'move "account name" numberSpotInQueue`')
+            return;
+        }
+
+        let user = rawSplit[1];
+        let num = parseInt(rawSplit[2].replace(/\s\s+/g, ''), 10);
+
+        if (!Number.isInteger(num)) {
+            pushReply(message, 'Please use this command in the following format `' + PREFIX + 'move "account name" numberSpotInQueue`')
+            return;
+        }
+
+        num--;
+        let found = false;
+        let arrayIndex = 0;
+
+        for (name in pushes[message.channel.id]["queue"]) {
+            if (user.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
+                arrayIndex = name;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            pushReply("Username " + user + " not found in the queue.");
+        }
+
+        arrayMove(pushes[message.channel.id]["queue"], arrayIndex, num);
+        saveJson('pushes', pushes);
+
+        rewriteEmbed(message);
+
+        // If moving has an effect on who can push
+        if ((num < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) || (arrayIndex <= pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length)) {
+            checkQueue(message);
+        }
+    },
 
     //fun
     cat: function(message) {
@@ -1562,3 +1614,19 @@ function createPushEmbed(id) {
             }
         });
     }
+
+    function arrayMove(arr, oldIndex, newIndex) {
+        while (oldIndex < 0) {
+            oldIndex += arr.length;
+        }
+        while (newIndex < 0) {
+            newIndex += arr.length;
+        }
+        if (newIndex >= arr.length) {
+            var k = newIndex - arr.length + 1;
+            while (k--) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(newIndex, 0, arr.splice(oldIndex, 1)[0]);
+    };
