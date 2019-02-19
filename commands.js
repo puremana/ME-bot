@@ -13,10 +13,10 @@ const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
-const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS, true);
+const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS.toLowerCase(), "true");
 const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
 const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
-const AHK_INVITER = setEnv(process.env.AHK_INVITER, false);
+const AHK_INVITER = setEnv(process.env.AHK_INVITER.toLowerCase(), "false");
 
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
 const BOTDESC = " is made with love (and nodejs) by Level \n" + "Type **" + PREFIX + "help** to get DMed the current list of commands \n If you enjoy this bot, please star this repo by visiting the source code below!";
@@ -90,19 +90,20 @@ exports.functions = {
         var pushCommands = "";
     
         if (message.member != null) {
-            if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-                showingRoles = "Leadership";
-                additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
-                PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
-                additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
-                pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" "(optional) inviter role name" \n' +
-                PREFIX + 'pushdelete \n';
-            }
-            else {
-                showingRoles = "Member";
+            let leadershipID = message.guild.roles.get(LEADERSHIPID).id;
+            if (leadershipID) {
+                if (message.member.roles.has(leadershipID)) {
+                    showingRoles = "Leadership";
+                    additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
+                    PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
+                    additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
+                    pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" "(optional) inviter role name" \n' +
+                    PREFIX + 'pushdelete \n';
+                }
             }
         }
-        else {
+
+        if (showingRoles === "") {
             showingRoles = "Member";
         }
     
@@ -797,7 +798,7 @@ exports.functions = {
 
         if (pushes[message.channel.id]["inviters"] != null) {
             // If set to use the bot
-            if ((AHK_INVITER === "true") && (pushes[message.channel.id]["inviters"] === "bot")) {
+            if ((AHK_INVITER === 'true') && (pushes[message.channel.id]["inviters"] === "bot")) {
                 fs.writeFile("storage/invites.txt", text, "utf8", (err) => {
                     if (err) {
                         console.log("There was an error saving the invites file. Error: "  + err);
@@ -1380,7 +1381,7 @@ exports.functions = {
 
     //fun
     cat: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
             return;
         }
         Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
@@ -1389,7 +1390,7 @@ exports.functions = {
         });
     },
     dog: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
             return;
         }
         Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
