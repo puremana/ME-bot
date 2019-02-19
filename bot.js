@@ -13,7 +13,7 @@ const SERVER_ID = process.env.SERVER_ID;
 const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
 const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
-const WEEKLIES = setEnv(process.env.WEEKLIES, false);
+const WEEKLIES = setEnv(process.env.WEEKLIES.toLowerCase(), 'false');
 const BINGO_CHANNEL_ID = process.env.BINGO_CHANNEL_ID;
 
 //Load Bot - loop through functions in commands and add to hashmap
@@ -38,7 +38,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
 
 commands.setters["setBingoFunction"](bingoFunction);
 
-if (WEEKLIES) {
+if (WEEKLIES === 'true') {
     // Scheduler for Weeklies
     var weekliesRule = new schedule.RecurrenceRule();
     weekliesRule.dayOfWeek = [2];
