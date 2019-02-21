@@ -1,5 +1,7 @@
 # ME Bot
-A Discord bot for the Mystic Empire IOURPG server.
+A Discord bot made for IOURPG (Idle Online Univerise) Guild Discord Servers.
+This is an extension to the iou-bot on the official IOURPG Discord server.
+You can find the iou-bot here - https://github.com/puremana/iou-bot
 
 Made with Nodejs and Discordjs, using json files to store data locally.
 
@@ -80,7 +82,7 @@ All commands start with the prefix allocated in the bot.js and command.js files.
 4) Click "Create bot user"
 5) Click to reveal token (will be used in step 8)
 6) Rename the "storage.example" folder to "storage"
-7) Rename the ".example.env" file to ".env"
+7) Rename the ".example.env" file to ".env" (you may be required to download a text editor such as to https://code.visualstudio.com rename)
 8) Fill out the .env file with your specific server details. You will need to be in Discord Developer mode to do this. Find out how to get into developer mode here - https://discordia.me/developer-mode
 9) Run "npm install" in terminal. You will also need to install nodejs if you haven't already
 10) Get the client ID from where you found the token. Go to https://discordapp.com/oauth2/authorize?client_id=INSERTCLIENTIDHERE&scope=bot&permissions=0
