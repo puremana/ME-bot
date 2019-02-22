@@ -738,7 +738,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviters" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
             if (!verifyJson(pJson)) {
                 pushReply(message, "Push could not be saved. Please try again.");
                 return;
@@ -796,9 +796,9 @@ exports.functions = {
             return;
         }
 
-        if (pushes[message.channel.id]["inviters"] != null) {
+        if (pushes[message.channel.id]["inviter"] != null) {
             // If set to use the bot
-            if ((AHK_INVITER === 'true') && (pushes[message.channel.id]["inviters"] === "bot")) {
+            if ((AHK_INVITER === 'true') && (pushes[message.channel.id]["inviter"] === "bot")) {
                 fs.writeFile("storage/invites.txt", text, "utf8", (err) => {
                     if (err) {
                         console.log("There was an error saving the invites file. Error: "  + err);
@@ -823,7 +823,7 @@ exports.functions = {
                 saveJson('pushes', pushes);
                 rewriteEmbed(message);
 
-                let inviterRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === pushes[message.channel.id]["inviters"]);
+                let inviterRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === pushes[message.channel.id]["inviter"]);
                 if (inviterRole) {
                     pushReplyExtended(message, "<@&" + inviterRole.id + "> Username **" + text + "** would like an invite.");
                 }
@@ -1378,6 +1378,27 @@ exports.functions = {
             checkQueue(message);
         }
     },
+    updateinviter: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            pushReply(message, "You require the Leadership role update the inviter role.");
+            return;
+        }
+
+        let inviter = message.content.substring(PREFIX.length + 14);
+
+        // Update inviter
+        let past = pushes[message.channel.id]["inviter"];
+        pushes[message.channel.id]["inviter"] = inviter;
+        saveJson('pushes', pushes);
+
+        pushReply(message, "Inviter role has been updated to **" + inviter + "**");
+        log("<@" + message.author.id + "> has the inviter role from **" + past + "** to **" + inviter + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+    },
 
     //fun
     cat: function(message) {
@@ -1492,8 +1513,8 @@ function createPushEmbed(id) {
     '`' + PREFIX + 'currentremove AccountName` *(' + pushes[id]["leaders"] + ' only)* \n' + 
     '`' + PREFIX + 'showcommands yes/no` *(' + pushes[id]["leaders"] + ' only)* \n' +
     '`' + PREFIX + 'createnewmessage` *(' + pushes[id]["leaders"] + ' only)* \n' +
-    '`' + PREFIX + 'purge NumberOfMessages` *(Leaders only)* \n' +
-    '`' + PREFIX + 'move "AccountName" NumberInQueue` *(Leaders only)*';
+    '`' + PREFIX + 'purge NumberOfMessages` *(' + pushes[id]["leaders"] + ' only)* \n' +
+    '`' + PREFIX + 'move "AccountName" NumberInQueue` *(' + pushes[id]["leaders"] + ' only)*';
 
     var commands = '`' + PREFIX + 'signup AccountName` \n' +
         '`' + PREFIX + 'queuejoin AccountName` \n' +
