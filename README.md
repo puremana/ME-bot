@@ -5,6 +5,8 @@ You can find the iou-bot here - https://github.com/puremana/iou-bot
 
 Made with Nodejs and Discordjs, using json files to store data locally.
 
+The bot contains a large amount of different functionality. For more information on how to use the bot, please check the guides listed on the wiki at https://github.com/puremana/me-bot/wiki
+
 ## Commands
 All commands start with the prefix allocated in the bot.js and command.js files.
 
@@ -55,7 +57,8 @@ All commands start with the prefix allocated in the bot.js and command.js files.
 
 - Push Commands
   - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push" "(optional) inviter role name"` *(Admin only)*
-  - `pushdelete`
+  - `pushdelete` *(Admin only)*
+  - `updateinviter` - `updateinviter InviterRoleName` *(Admin only)*
   - `sent` - `sent AccountName` *(Leaders only)*
   - `senttop` - `senttop NumberOfPopleToDelete` *(Leaders only)*
   - `queueremove` - `queueremove AccountName` *(Leaders only)*
