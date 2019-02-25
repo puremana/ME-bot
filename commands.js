@@ -1645,18 +1645,26 @@ function createPushEmbed(id) {
 
     function reply(message, content) {
         message.channel.send(content)
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err)
+            });
     }
 
     function pushReply(message, content) {
         message.channel.send(content)
-            .then(m => m.delete(PUSHTIMEOUT))
+            .then(m => {
+                m.delete(PUSHTIMEOUT)
+                    .catch(err => {})
+            })
             .catch(err => console.log(err));
     }
 
     function pushReplyExtended(message, content) {
         message.channel.send(content)
-            .then(m => m.delete(PUSHTIMEOUT * 10))
+            .then(m => {
+                m.delete(PUSHTIMEOUT * 10)
+                    .catch(err => {})
+            })
             .catch(err => console.log(err));
     }
 

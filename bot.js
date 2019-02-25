@@ -108,7 +108,10 @@ try {
                 return;
             }
             message.channel.send("Invalid command, type **" + PREFIX + "help** to get current list of commands")
-                .then(m => m.delete(TIMEOUT * 10))
+                .then(m => {
+                    m.delete(TIMEOUT * 10)
+                        .catch(err => {});
+                })
                 .catch(err => console.log(err));
         }
         deleteMessage(message);
@@ -122,7 +125,7 @@ bot.login(TOKEN);
 var deleteMessage = function(message) {
     if (message.channel.type != "dm") {
         message.delete(TIMEOUT)
-            .catch(err => console.log(err));
+            .catch(err => {});
     }
 }
 
