@@ -738,7 +738,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true, "been" : [], "requeue" : true};
             if (!verifyJson(pJson)) {
                 pushReply(message, "Push could not be saved. Please try again.");
                 return;
@@ -779,6 +779,12 @@ exports.functions = {
     signup: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        // If the push isn't allowing alt accounts
+        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+            pushReply(message, "This push is currently not accepting re-queues.");
             return;
         }
 
@@ -844,6 +850,12 @@ exports.functions = {
     queuejoin: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        // If the push isn't allowing alt accounts
+        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+            pushReply(message, "This push is currently not accepting re-queues.");
             return;
         }
 
@@ -1135,6 +1147,12 @@ exports.functions = {
             }
         }
 
+        // If the push isn't allowing alt accounts
+        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+            pushReply(message, "This push is currently not accepting re-queues.");
+            return;
+        }
+
         if (letIn) {
             //make sure it was same person who made
             if (pushes[message.channel.id]["queue"].length !== 0) {
@@ -1147,17 +1165,26 @@ exports.functions = {
             }
             
 
-            //if it is the one who is ready
+            // If it is the one who is ready
             if ((idIndex < pushes[message.channel.id]["slots"] - Object.keys(pushes[message.channel.id]["currently"]).length) || pushes[message.channel.id]["queue"].length === 0) {
     
-                //add to current push list
+                // Add to current push list
                 pushes[message.channel.id]["currently"].push({"id" : message.author.id, "name" : text});
-                //delete from queue
+                
+                // Delete from queue
                 pushes[message.channel.id]["queue"].splice(idIndex, 1);
-                //if on invite list, delete
+                // If on invite list, delete
                 for (person in pushes[message.channel.id]["invites"]) {
                     if (text.toLowerCase() === pushes[message.channel.id]["invites"][person]["name"].toLowerCase()) {
                         pushes[message.channel.id]["invites"].splice(person, 1);
+                    }
+                }
+
+                // If push has a been queue, put them in
+                if (pushes[message.channel.id].hasOwnProperty("been")) {
+                    // Check the user ID isn't already in the push
+                    if (!pushes[message.channel.id]["been"].includes(message.author.id)) {
+                        pushes[message.channel.id]["been"].push(message.author.id);
                     }
                 }
 
@@ -1398,6 +1425,36 @@ exports.functions = {
 
         pushReply(message, "Inviter role has been updated to **" + inviter + "**");
         log("<@" + message.author.id + "> has the inviter role from **" + past + "** to **" + inviter + "** in channel " + message.guild.channels.get(message.channel.id).toString());
+    },
+    togglerequeue: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            pushReply(message, "You require the Leadership role update the inviter role.");
+            return;
+        }
+
+        // Check if this push has a been queue first
+        if (!pushes[message.channel.id].hasOwnProperty("been")) {
+            pushReply(message, "Guild push was created before re-queue update. Please recreate the push to activate this feature");
+            return;
+        }
+
+        if (pushes[message.channel.id].hasOwnProperty("requeue") && pushes[message.channel.id]["requeue"] === false) {
+            pushes[message.channel.id]["requeue"] = true;
+            pushReply(message, "Re-queue mode has been toggled on. You will be able to re-queue despite having already been in the push.");
+        } else {
+            pushes[message.channel.id]["requeue"] = false;
+            pushReply(message, "Re-queue mode has been toggled off. You will not be able to re-queue if you have already been in the push.");
+        }
+        saveJson('pushes', pushes);
+        log("<@" + message.author.id + "> has toggled the re-queue to be " + pushes[message.channel.id]['requeue'] + " in " + message.guild.channels.get(message.channel.id).toString());
+    },
+    requeueremove: function(message) {
+
     },
 
     //fun
