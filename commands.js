@@ -1188,6 +1188,14 @@ exports.functions = {
                     }
                 }
 
+                // If push has an alts queue, put them in
+                if (pushes[message.channel.id].hasOwnProperty("alts")) {
+                    // Check the user name isn't already in the push
+                    if (!pushes[message.channel.id]["pushnames"].includes(text)) {
+                        pushes[message.channel.id]["pushnames"].push(text);
+                    }
+                }
+
                 saveJson('pushes', pushes);
                 rewriteEmbed(message);
 
