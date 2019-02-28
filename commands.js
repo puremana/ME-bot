@@ -738,7 +738,7 @@ exports.functions = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true, "been" : [], "requeue" : true};
+            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true, "pushids" : [], "requeue" : true, "pushnames" : [], "alts": true};
             if (!verifyJson(pJson)) {
                 pushReply(message, "Push could not be saved. Please try again.");
                 return;
@@ -783,7 +783,7 @@ exports.functions = {
         }
 
         // If the push isn't allowing alt accounts
-        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+        if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["alts"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
             pushReply(message, "This push is currently not accepting re-queues.");
             return;
         }
@@ -854,7 +854,7 @@ exports.functions = {
         }
 
         // If the push isn't allowing alt accounts
-        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+        if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["alts"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
             pushReply(message, "This push is currently not accepting re-queues.");
             return;
         }
@@ -1148,7 +1148,7 @@ exports.functions = {
         }
 
         // If the push isn't allowing alt accounts
-        if (pushes[message.channel.id].hasOwnProperty("been") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["been"].includes(message.author.id)) {
+        if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
             pushReply(message, "This push is currently not accepting re-queues.");
             return;
         }
@@ -1180,11 +1180,11 @@ exports.functions = {
                     }
                 }
 
-                // If push has a been queue, put them in
-                if (pushes[message.channel.id].hasOwnProperty("been")) {
+                // If push has a pushid queue, put them in
+                if (pushes[message.channel.id].hasOwnProperty("pushids")) {
                     // Check the user ID isn't already in the push
-                    if (!pushes[message.channel.id]["been"].includes(message.author.id)) {
-                        pushes[message.channel.id]["been"].push(message.author.id);
+                    if (!pushes[message.channel.id]["pushids"].includes(message.author.id)) {
+                        pushes[message.channel.id]["pushids"].push(message.author.id);
                     }
                 }
 
@@ -1426,7 +1426,7 @@ exports.functions = {
         pushReply(message, "Inviter role has been updated to **" + inviter + "**");
         log("<@" + message.author.id + "> has the inviter role from **" + past + "** to **" + inviter + "** in channel " + message.guild.channels.get(message.channel.id).toString());
     },
-    togglerequeue: function(message) {
+    togglealts: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             pushReply(message, "Could not find a push in this channel.");
             return;
@@ -1437,24 +1437,24 @@ exports.functions = {
             return;
         }
 
-        // Check if this push has a been queue first
-        if (!pushes[message.channel.id].hasOwnProperty("been")) {
+        // Check if this push has a pushid queue first
+        if (!pushes[message.channel.id].hasOwnProperty("pushids")) {
             pushReply(message, "Guild push was created before re-queue update. Please recreate the push to activate this feature");
             return;
         }
 
-        if (pushes[message.channel.id].hasOwnProperty("requeue") && pushes[message.channel.id]["requeue"] === false) {
-            pushes[message.channel.id]["requeue"] = true;
-            pushReply(message, "Re-queue mode has been toggled on. You will be able to re-queue despite having already been in the push.");
+        if (pushes[message.channel.id].hasOwnProperty("alts") && pushes[message.channel.id]["alts"] === false) {
+            pushes[message.channel.id]["alts"] = true;
+            pushReply(message, "Alt mode has been toggled on. You will be able to queue alts.");
         } else {
-            pushes[message.channel.id]["requeue"] = false;
-            pushReply(message, "Re-queue mode has been toggled off. You will not be able to re-queue if you have already been in the push.");
+            pushes[message.channel.id]["alts"] = false;
+            pushReply(message, "Alt mode has been toggled off. You will not be able to use queue alts.");
         }
         saveJson('pushes', pushes);
-        log("<@" + message.author.id + "> has toggled the re-queue to be " + pushes[message.channel.id]['requeue'] + " in " + message.guild.channels.get(message.channel.id).toString());
+        log("<@" + message.author.id + "> has toggled the alt mode to be " + pushes[message.channel.id]['alts'] + " in " + message.guild.channels.get(message.channel.id).toString());
     },
-    requeueremove: function(message) {
-
+    togglerequeue: function(message) {
+        
     },
 
     //fun
