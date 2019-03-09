@@ -784,11 +784,17 @@ exports.functions = {
 
         // If the push isn't allowing alt accounts
         if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["alts"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
-            pushReply(message, "This push is currently not accepting re-queues.");
+            pushReply(message, "This push is currently not accepting alt accounts.");
             return;
         }
 
         var text = message.content.substring(PREFIX.length + 7);
+
+        // If the push isn't allowing re-queuing
+        if (pushes[message.channel.id].hasOwnProperty("pushnames") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["pushnames"].includes(text.toLowerCase())) {
+            pushReply(message, "This push does not currently allow you to re-queue the same account.");
+            return;
+        }
 
         for (name in pushes[message.channel.id]["invites"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["invites"][name]["name"].toLowerCase()) {
@@ -855,7 +861,7 @@ exports.functions = {
 
         // If the push isn't allowing alt accounts
         if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["alts"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
-            pushReply(message, "This push is currently not accepting re-queues.");
+            pushReply(message, "This push is currently not accepting alt accounts.");
             return;
         }
 
@@ -872,6 +878,12 @@ exports.functions = {
             text = message.member.displayName;
         }
 
+        // If the push isn't allowing re-queuing
+        if (pushes[message.channel.id].hasOwnProperty("pushnames") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["pushnames"].includes(text.toLowerCase())) {
+            pushReply(message, "This push does not currently allow you to re-queue the same account.");
+            return;
+        }
+        
         for (name in pushes[message.channel.id]["queue"]) {
             if (text.toLowerCase() === pushes[message.channel.id]["queue"][name]["name"].toLowerCase()) {
                 pushReply(message, "Username " + text + " is already in the queue.");
@@ -1149,7 +1161,13 @@ exports.functions = {
 
         // If the push isn't allowing alt accounts
         if (pushes[message.channel.id].hasOwnProperty("pushids") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["pushids"].includes(message.author.id)) {
-            pushReply(message, "This push is currently not accepting re-queues.");
+            pushReply(message, "This push is currently not accepting alt accounts.");
+            return;
+        }
+
+        // If the push isn't allowing re-queuing
+        if (pushes[message.channel.id].hasOwnProperty("pushnames") && pushes[message.channel.id]["requeue"] === false && pushes[message.channel.id]["pushnames"].includes(text.toLowerCase())) {
+            pushReply(message, "This push does not currently allow you to re-queue the same account.");
             return;
         }
 
@@ -1189,10 +1207,10 @@ exports.functions = {
                 }
 
                 // If push has an alts queue, put them in
-                if (pushes[message.channel.id].hasOwnProperty("alts")) {
+                if (pushes[message.channel.id].hasOwnProperty("pushnames")) {
                     // Check the user name isn't already in the push
-                    if (!pushes[message.channel.id]["pushnames"].includes(text)) {
-                        pushes[message.channel.id]["pushnames"].push(text);
+                    if (!pushes[message.channel.id]["pushnames"].includes(text.toLowerCase())) {
+                        pushes[message.channel.id]["pushnames"].push(text.toLowerCase());
                     }
                 }
 
@@ -1368,7 +1386,7 @@ exports.functions = {
         }
 
         if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.");
+            pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to move players in this push.");
             return;
         }
 
@@ -1441,13 +1459,13 @@ exports.functions = {
         }
 
         if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
-            pushReply(message, "You require the Leadership role update the inviter role.");
+            pushReply(message, "You require the Leadership role to toggle alt mode.");
             return;
         }
 
         // Check if this push has a pushid queue first
         if (!pushes[message.channel.id].hasOwnProperty("pushids")) {
-            pushReply(message, "Guild push was created before re-queue update. Please recreate the push to activate this feature");
+            pushReply(message, "Guild push was created before the alt mode update. Please recreate the push to activate this feature");
             return;
         }
 
@@ -1462,7 +1480,31 @@ exports.functions = {
         log("<@" + message.author.id + "> has toggled the alt mode to be " + pushes[message.channel.id]['alts'] + " in " + message.guild.channels.get(message.channel.id).toString());
     },
     togglerequeue: function(message) {
-        
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            pushReply(message, "You require the Leadership role to toggle re-queue mode.");
+            return;
+        }
+
+        // Check if this push has a pushid queue first
+        if (!pushes[message.channel.id].hasOwnProperty("pushnames")) {
+            pushReply(message, "Guild push was created before re-queue update. Please recreate the push to activate this feature");
+            return;
+        }
+
+        if (pushes[message.channel.id].hasOwnProperty("requeue") && pushes[message.channel.id]["requeue"] === false) {
+            pushes[message.channel.id]["requeue"] = true;
+            pushReply(message, "Re-queue mode has been toggled on. You will be able to re-queue your account.");
+        } else {
+            pushes[message.channel.id]["requeue"] = false;
+            pushReply(message, "Re-queue mode has been toggled off. You will not be able to re-queue your account.");
+        }
+        saveJson('pushes', pushes);
+        log("<@" + message.author.id + "> has toggled the re-queue mode to be " + pushes[message.channel.id]['requeue'] + " in " + message.guild.channels.get(message.channel.id).toString());
     },
 
     //fun
