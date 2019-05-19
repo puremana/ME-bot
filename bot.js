@@ -16,12 +16,15 @@ const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const WEEKLIES = setEnv(process.env.WEEKLIES.toLowerCase(), 'false');
 const BINGO_CHANNEL_ID = process.env.BINGO_CHANNEL_ID;
 
+var commands = require('./commands.js');
 //Load Bot - loop through functions in commands and add to hashmap
+
 var hashArray = [];
 for (com in commands.functions) {
+    console.log(com);
     hashArray.push(com);
 }
-commands.setters["setBot"](bot);
+// commands.setters["setBot"](bot);
 
 //scheduler for bingo
 var rule = new schedule.RecurrenceRule();
@@ -36,7 +39,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
     bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
-commands.setters["setBingoFunction"](bingoFunction);
+// commands.setters["setBingoFunction"](bingoFunction);
 
 if (WEEKLIES === 'true') {
     // Scheduler for Weeklies

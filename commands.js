@@ -9,7 +9,6 @@ const BOTNAME = setEnv(process.env.BOT_NAME, "Guild Bot");
 const PREFIX = setEnv(process.env.PREFIX, "$");
 const SERVER_ID = process.env.SERVER_ID;
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
-const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
@@ -41,23 +40,12 @@ exports.setters = {
     }
 }
 
+module.exports = {
+    ...require('./commands/challenges'),
+}
+
 exports.functions = {
-    //Challenge Commands
-    bronze: function(message) {
-        if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            reply(message, "http://i.imgur.com/POra9Kx.jpg");
-        }
-    },
-    silver: function(message) {
-        if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            reply(message, "http://i.imgur.com/rkJ51fC.jpg");
-        }
-    },
-    gold: function(message) {
-        if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
-            reply(message, "http://i.imgur.com/5GXghiA.jpg");
-        }
-    },
+    
 
     //Event Commands
     invasion: function(message) {
@@ -1748,13 +1736,6 @@ function createPushEmbed(id) {
     // If the env variable is not set, use a default variable
     function setEnv(envVariable, defaultVariable) {
         return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
-    }
-
-    function reply(message, content) {
-        message.channel.send(content)
-            .catch(err => {
-                console.log(err)
-            });
     }
 
     function pushReply(message, content) {
