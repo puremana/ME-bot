@@ -1,7 +1,8 @@
+const dotenv = require('dotenv').config();
 var functions = require("../functions.js");
 const CHALLENGECHANNELID = process.env.CHALLENGE_CHANNEL_ID;
 
-exports.functions = {
+module.exports = {
     bronze: function(message) {
         if ((message.channel.id == CHALLENGECHANNELID) || (message.channel.type == "dm")) {
             functions.reply(message, "http://i.imgur.com/POra9Kx.jpg");

@@ -24,7 +24,7 @@ for (com in commands.functions) {
     console.log(com);
     hashArray.push(com);
 }
-// commands.setters["setBot"](bot);
+commands.setters["setBot"](bot);
 
 //scheduler for bingo
 var rule = new schedule.RecurrenceRule();
