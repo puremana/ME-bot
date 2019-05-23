@@ -16,8 +16,13 @@ const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const WEEKLIES = setEnv(process.env.WEEKLIES.toLowerCase(), 'false');
 const BINGO_CHANNEL_ID = process.env.BINGO_CHANNEL_ID;
 
-var commands = require('./commands.js');
+
 //Load Bot - loop through functions in commands and add to hashmap
+
+var variables = require('./variables.js');
+variables.setters["setBot"](bot);
+
+var commands = require('./commands.js');
 
 var hashArray = [];
 for (com in commands.functions) {

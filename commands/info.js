@@ -1,6 +1,7 @@
 const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var functions = require("../functions.js");
+var variables = require('../variables.js');
 
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const PREFIX = functions.setEnv(process.env.PREFIX, "$");
@@ -124,12 +125,13 @@ module.exports = {
         message.author.send(embed);
     }, 
     info: function(message) {
+        let bot = variables.functions["getBot"]();
         var embed = new Discord.RichEmbed()
         .addField(BOTNAME, BOTNAME + BOTDESC)
         .setColor(0x9B59B6)
         .setFooter("If you enjoy this bot, please star this repo by visiting https://github.com/puremana/me-bot")
         .setThumbnail(bot.user.avatarURL)
-        reply(message, embed);
+        functions.reply(message, embed);
     },
     serverinfo: function(message) {
         if (message.channel.type == "dm") {
@@ -147,6 +149,9 @@ module.exports = {
                 activeMembers++;
             }
         }
+
+        let bot = variables.functions["getBot"]();
+
         var embed = new Discord.RichEmbed()
         .setAuthor(BOTNAME, bot.user.avatarURL)
         .setTitle("Server Info - " + message.guild.name)
