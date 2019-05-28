@@ -40,14 +40,11 @@ exports.functions = {
     ...require('./commands/events'),
     ...require('./commands/info'),
     ...require('./commands/custom'),
-    ...require('./commands/fun')
+    ...require('./commands/fun'),
+    ...require('./commands/links')
 }
 
-exports.tests = {    
-    
-    
-
-    //Voting
+exports.tests = {
     votenew: function(message) {
         if (message.member == null) {
             reply(message, "Message author is undefined.");
@@ -322,30 +319,6 @@ exports.tests = {
             }
         }
     },
-
-    //Useful Links
-    guide: function(message) {
-        reply(message, "https://tinyurl.com/IOUguide");
-    },
-    multicalc: function(message) {
-        reply(message, "https://docs.google.com/spreadsheets/d/1QGBm6KtcOZraqSkLWVuqTF16vUD7rrOvIpdh59bFLmg/edit#gid=357923173");
-    },
-    forum: function(message) {
-        reply(message, "http://iourpg.com/forum");
-    },
-    wiki: function(message) {
-        reply(message, "http://iourpg.wikia.com/wiki/Idle_Online_Universe_Wiki");
-    },
-    cards: function(message) {
-        reply(message, "http://iouhelper.com/cards.html");
-    },
-    test: function(message) {
-        reply(message, "https://discord.gg/ncEarFv");
-    },
-    trello: function(message) {
-        reply(message, "https://trello.com/b/usVhG9Ry/iou-development-board");
-    },
-
     //bingo
     bingoadd: function(message) {
         //check doesn't already have bingo role
