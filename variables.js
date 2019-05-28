@@ -1,5 +1,6 @@
 var bot;
 var bingoFunction;
+var weekliesFunction;
 
 exports.setters = {
     setBot: function(theBot) {
@@ -7,6 +8,9 @@ exports.setters = {
     },
     setBingoFunction: function(theBingoFunction) {
         bingoFunction = theBingoFunction;
+    },
+    setWeekliesFunction: function(theWeekliesFunction) {
+        weekliesFunction = theWeekliesFunction;
     }
 }
 
@@ -16,5 +20,8 @@ exports.functions = {
     },
     getBingoFunction: function() {
         return bingoFunction;
-    }
+    },
+    getWeekliesFunction: function() {
+        return weekliesFunction;
+    },
 }

@@ -59,7 +59,7 @@ if (WEEKLIES === 'true') {
         bot.guilds.find(name => name.id === SERVER_ID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
     });
 
-    commands.setters["setWeekliesFunction"](weekliesFunction);
+    variables.setters["setWeekliesFunction"](weekliesFunction);
 
     // Scheduler for After Weeklies
     var afterWeekliesRule = new schedule.RecurrenceRule();

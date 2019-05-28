@@ -9,24 +9,11 @@ const SERVER_ID = process.env.SERVER_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
 
-const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const AHK_INVITER = setEnv(process.env.AHK_INVITER.toLowerCase(), "false");
 
 const PUSHINSTRUCTIONS = "Request a guild invite by using the `" + PREFIX + "signup AccountName` command.\nUse `" + PREFIX + "queuejoin AccountName` to join the queue.\n Use `" + PREFIX + "in Accountname` when you are in the front of the queue and `" + PREFIX + "out AccountName` when you are done pushing.";
-const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
 
 var bot;
-var bingoFunction;
-var weekliesFunction;
-
-exports.setters = {
-    setWeekliesFunction: function(theWeekliesFunction) {
-        weekliesFunction = theWeekliesFunction;
-    }
-}
 
 exports.functions = {
     ...require('./commands/challenges'),
@@ -37,51 +24,10 @@ exports.functions = {
     ...require('./commands/links'),
     ...require('./commands/voting'),
     ...require('./commands/bingo'),
+    ...require('./commands/weeklies')
 }
 
 exports.tests = {
-    //weeklies
-    weekliesadd: function(message) {
-        //check we're in a text channel
-        if (message.channel.type == "dm") {
-            return;
-        }
-        //check doesn't already have weeklies role
-        if (message.member.roles.find(role => role.name === WEEKLIES_ROLE_NAME)) {
-            reply(message, "You already have the weeklies role. Use `" + PREFIX + "weekliesremove` to remove it.")
-            return;
-        }
-        //add the role
-        let weekliesRole = message.member.guild.roles.find(role => role.name === WEEKLIES_ROLE_NAME);
-        reply(message, "Your weeklies role has been added.")
-        message.member.addRole(weekliesRole, "Command issued.");
-    },
-    weekliesremove: function(message) {
-        //check we're in dm channel
-        if (message.channel.type == "dm") {
-            return;
-        }
-        //check they have the bingo role
-        if (message.member.roles.find(role => role.name === WEEKLIES_ROLE_NAME)) {
-            //remove the role
-            let weekliesRole = message.member.guild.roles.find(role => role.name === WEEKLIES_ROLE_NAME);
-            reply(message, "Your weeklies role has been removed.")
-            message.member.removeRole(weekliesRole, "Command issued.");
-        }
-        else {
-            reply(message, "You don't have the weeklies role. Use `" + PREFIX + "weekliesadd` to get it.")
-        }
-    },
-    weeklieswhen: function(message) {
-        if (message.author != null) {
-            let dayString = days[weekliesFunction.nextInvocation().getDay()];
-            let monthString = monthNames[weekliesFunction.nextInvocation().getMonth()];
-            let dateString = weekliesFunction.nextInvocation().getDate();
-            let timeString = weekliesFunction.nextInvocation().toLocaleTimeString('en-US');
-            message.author.send("Weeklies should arrive **" + dayString + ", " + monthString + " " + dateString + ", " + timeString + "** (America/Dawsons Standard Time)");
-        }
-    },
-
     //push
     pushsetup: function(message) {
         if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {

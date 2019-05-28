@@ -26,7 +26,7 @@ module.exports = {
         }
     },
     cat: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
             return;
         }
         Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
@@ -35,7 +35,7 @@ module.exports = {
         });
     },
     dog: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
             return;
         }
         Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
@@ -44,7 +44,7 @@ module.exports = {
         });
     },
     flip: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == 'false')) {
             return;
         }
         var toss = (Math.floor(Math.random() * 2) == 0);
@@ -56,7 +56,7 @@ module.exports = {
         }
     },
     ball: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
+        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == 'false')) {
             return;
         }
         Promise.all([httpRequest("https", "8ball.delegator.com", "/magic/JSON/abc")]).then(values => { 
