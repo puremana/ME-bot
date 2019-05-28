@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var functions = require("../functions.js");
 var variables = require('../variables.js');
+var customCommands = require('./../storage/custom.json');
 
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const PREFIX = functions.setEnv(process.env.PREFIX, "$");
@@ -164,6 +165,6 @@ module.exports = {
         .addField("Total Members", totalMembers, true)
         .addField("Invite Link", "https://discord.gg/WfcvtZm", true)
         .setFooter("Server creation - " + message.guild.createdAt, message.guild.owner.user.avatarURL)
-        reply(message, embed);
+        functions.reply(message, embed);
     }
 }

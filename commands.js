@@ -2,13 +2,11 @@ const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var fs = require("fs");
 var child_process = require('child_process');
-var customCommands = require('./storage/custom.json');
 var votes = require('./storage/votes.json');
 var pushes = require('./storage/pushes.json');
 
 const PREFIX = setEnv(process.env.PREFIX, "$");
 const SERVER_ID = process.env.SERVER_ID;
-const LEADERSHIPID = process.env.LEADERSHIP_ID;
 const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
@@ -42,61 +40,12 @@ exports.setters = {
 exports.functions = {
     ...require('./commands/challenges'),
     ...require('./commands/events'),
-    ...require('./commands/info')
+    ...require('./commands/info'),
+    ...require('./commands/custom')
 }
 
-exports.functions = {    
-    add: function(message) {
-        if (message.member == null) {
-            reply(message, "Message author is undefined.");
-            return;
-        }
-        var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-            if (args.length < 3) {
-                reply(message, "Please enter the command in the format `" + PREFIX + "add command_name command description`.");
-                return;
-            }
-            var desc = "";
-            for (d = 2; d < args.length; d++) {
-                desc = desc + args[d] + " ";
-            }
-            var command = "\'" + args[1].toLowerCase() + "': '" + desc + "',";
-            customCommands[args[1].toLowerCase()] = desc;
-            saveJson('custom', customCommands);
-            reply(message, "Command " + PREFIX + args[1] + " added.");
-        }
-        else {
-            reply(message, "You do not have the Leadership role.");
-        }
-    },
-    remove: function(message) {
-        if (message.member == null) {
-            reply(message, "Message author is undefined.");
-            return;
-        }
-        var args = message.content.substring(PREFIX.length).split(" ");
-        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-            if (args.length == 2) {
-                for (c in customCommands) {
-                    if (args[1].toLowerCase() == c) {
-                        delete customCommands[c];
-                        saveJson('custom', customCommands);
-                        reply(message, "Command " + PREFIX + args[1] + " removed.");
-                        return;
-                    }
-                }
-                reply(message, "There is no " + PREFIX + args[1] + " command.");
-            }
-            else {
-                reply(message, "Please enter the command in the format `" + PREFIX + "remove command_name`.");
-                return;
-            }
-        }
-        else {
-            reply(message, "You do not have the Leadership role.");
-        }
-    },
+exports.tests = {    
+    
     echo: function(message) {
         if (message.member == null) {
             reply(message, "Message author is undefined.");
@@ -1586,15 +1535,6 @@ function createPushEmbed(id) {
                     .catch(err => {})
             })
             .catch(err => console.log(err));
-    }
-
-    function saveJson(file, data) {
-        fs.writeFile("storage/" + file + ".json", JSON.stringify(data), "utf8", (err) => {
-            if (err) {
-                console.log("There was an error saving the file. Error: "  + err);
-                pushReply(message, "There was an error saving the " + file + " file. Please contact the bot owner.");
-            }
-        });
     }
 
     function arrayMove(arr, oldIndex, newIndex) {
