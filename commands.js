@@ -7,10 +7,8 @@ var pushes = require('./storage/pushes.json');
 
 const PREFIX = setEnv(process.env.PREFIX, "$");
 const SERVER_ID = process.env.SERVER_ID;
-const FUNCHANNELID = process.env.FUN_CHANNEL_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
-const FUNCOMMANDS = setEnv(process.env.FUN_COMMANDS.toLowerCase(), "true");
 const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
 const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const AHK_INVITER = setEnv(process.env.AHK_INVITER.toLowerCase(), "false");
@@ -41,31 +39,13 @@ exports.functions = {
     ...require('./commands/challenges'),
     ...require('./commands/events'),
     ...require('./commands/info'),
-    ...require('./commands/custom')
+    ...require('./commands/custom'),
+    ...require('./commands/fun')
 }
 
 exports.tests = {    
     
-    echo: function(message) {
-        if (message.member == null) {
-            reply(message, "Message author is undefined.");
-            return;
-        }
-        if (message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
-            var text = message.content.substring(PREFIX.length + 5);
-            reply(message, text);
-            if (message.channel.type != "dm") {
-                try {
-                    message.delete(0);
-                } catch (err) {
-                    console.log(err)
-                }
-            }
-        }
-        else {
-            reply(message, "You do not have the Leadership role.");
-        }
-    },
+    
 
     //Voting
     votenew: function(message) {
@@ -1274,72 +1254,9 @@ exports.tests = {
         }
         saveJson('pushes', pushes);
         log("<@" + message.author.id + "> has toggled the re-queue mode to be " + pushes[message.channel.id]['requeue'] + " in " + message.guild.channels.get(message.channel.id).toString());
-    },
-
-    //fun
-    cat: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
-            return;
-        }
-        Promise.all([httpRequest("http", "aws.random.cat", "/meow")]).then(values => { 
-            catJson = JSON.parse(values[0]);
-            reply(message, catJson.file);
-        });
-    },
-    dog: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS === 'false')) {
-            return;
-        }
-        Promise.all([httpRequest("https", "dog.ceo", "/api/breeds/image/random")]).then(values => { 
-            dogJson = JSON.parse(values[0]);
-            reply(message, dogJson.message);
-        });
-    },
-    flip: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
-            return;
-        }
-        var toss = (Math.floor(Math.random() * 2) == 0);
-        if (toss) {
-            reply(message, "Heads");
-        } 
-        else {
-            reply(message, "Tails");
-        }
-    },
-    ball: function(message) {
-        if ((message.channel.id != FUNCHANNELID) || (FUNCOMMANDS == false)) {
-            return;
-        }
-        Promise.all([httpRequest("https", "8ball.delegator.com", "/magic/JSON/abc")]).then(values => { 
-            ballJson = JSON.parse(values[0]);
-            reply(message, ballJson.magic.answer);
-        });
-    }
+    },    
 }
-var httpRequest = function (type, url, ranHost) {
-    return new Promise((resolve, reject) => {
-        var http = require(type);
-    
-        var options = {
-            host: url,
-            path: ranHost
-        }
-        var request = http.request(options, function (res) {
-            var data = '';
-            res.on('data', function (chunk) {
-                data += chunk;
-            });
-            res.on('end', function () {
-                resolve(data);
-            });
-        });
-        request.on('error', function (e) {
-            reject(e.message);
-        });
-        request.end();
-    });
-};
+
 var displayPoll = function(message, nameOfPoll) {
     var poll = votes[nameOfPoll]["voteOptions"]; 
     var num = 1;
