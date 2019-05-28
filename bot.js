@@ -29,7 +29,6 @@ for (com in commands.functions) {
     console.log(com);
     hashArray.push(com);
 }
-commands.setters["setBot"](bot);
 
 //scheduler for bingo
 var rule = new schedule.RecurrenceRule();
@@ -44,7 +43,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
     bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
-// commands.setters["setBingoFunction"](bingoFunction);
+variables.setters["setBingoFunction"](bingoFunction);
 
 if (WEEKLIES === 'true') {
     // Scheduler for Weeklies

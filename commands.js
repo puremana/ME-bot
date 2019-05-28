@@ -8,7 +8,7 @@ const PREFIX = setEnv(process.env.PREFIX, "$");
 const SERVER_ID = process.env.SERVER_ID;
 const PUSH_LOG_ID = process.env.PUSH_LOG_CHANNEL_ID;
 const PUSHTIMEOUT = setEnv(process.env.PUSH_TIMEOUT, 15000);
-const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
+
 const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const AHK_INVITER = setEnv(process.env.AHK_INVITER.toLowerCase(), "false");
 
@@ -23,12 +23,6 @@ var bingoFunction;
 var weekliesFunction;
 
 exports.setters = {
-    setBot: function(theBot) {
-        bot = theBot;
-    },
-    setBingoFunction: function(theBingoFunction) {
-        bingoFunction = theBingoFunction;
-    },
     setWeekliesFunction: function(theWeekliesFunction) {
         weekliesFunction = theWeekliesFunction;
     }
@@ -41,70 +35,11 @@ exports.functions = {
     ...require('./commands/custom'),
     ...require('./commands/fun'),
     ...require('./commands/links'),
-    ...require('./commands/voting')
+    ...require('./commands/voting'),
+    ...require('./commands/bingo'),
 }
 
 exports.tests = {
-
-    //bingo
-    bingoadd: function(message) {
-        //check doesn't already have bingo role
-        if (message.member.roles.find(role => role.name === BINGO_ROLE_NAME)) {
-            reply(message, "You already have the bingo role. Use `" + PREFIX + "bingoremove` to remove it.")
-            return;
-        }
-        //add the role
-        let bingoRole = message.member.guild.roles.find(role => role.name === BINGO_ROLE_NAME);
-        message.member.addRole(bingoRole, "Command issued.");
-        reply(message, "Your bingo role has been added.")
-    },
-    bingoremove: function(message) {
-        //check they have the bingo role
-        if (message.member.roles.find(role => role.name === BINGO_ROLE_NAME)) {
-            //remove the role
-            let bingoRole = message.member.guild.roles.find(role => role.name === BINGO_ROLE_NAME);
-            message.member.removeRole(bingoRole, "Command issued.");
-            reply(message, "Your bingo role has been removed.")
-        }
-        else {
-            reply(message, "You don't have the bingo role. Use `" + PREFIX + "bingoadd` to get it.")
-        }
-    },
-    bingowhen: function(message) {
-        if (message.author == null) {
-            return;
-        }
-
-        let bingoDate = bingoFunction.nextInvocation().getTime();
-        // Adjusting for the 10 minutes before bingo that the bot sends the notifcation message
-        bingoDate = bingoDate + 600000;
-        let now = Date.now();
-        let diff = bingoDate - now;
-
-        var msec = diff;
-        var days = Math.floor(msec / 1000 / 60 / 60 / 24);
-        msec -= days * 1000 * 60 * 60 * 24;
-        var hours = Math.floor(msec / 1000 / 60 / 60);
-        msec -= hours * 1000 * 60 * 60;
-        var minutes = Math.floor(msec / 1000 / 60);
-        msec -= minutes * 1000 * 60;
-        var seconds = Math.floor(msec / 1000);
-        msec -= seconds * 1000;
-
-        let stringDiff = "The next bingo will be in ";
-        
-        if (days > 0) {
-            stringDiff = stringDiff + days + " days, ";
-        }
-        if (hours > 0) {
-            stringDiff = stringDiff + hours + " hours, ";
-        }
-
-        stringDiff = stringDiff + minutes + " minutes, and " + seconds + " seconds";
-
-        reply(stringDiff);
-    },
-
     //weeklies
     weekliesadd: function(message) {
         //check we're in a text channel

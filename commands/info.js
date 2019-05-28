@@ -1,4 +1,3 @@
-const dotenv = require('dotenv').config();
 const Discord = require("discord.js");
 var functions = require("../functions.js");
 var variables = require('../variables.js');
