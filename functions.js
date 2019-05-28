@@ -19,6 +19,15 @@ module.exports = {
                 pushReply(message, "There was an error saving the " + file + " file. Please contact the bot owner.");
             }
         });
+    },
+
+    verifyJson: function(json) {
+        try {
+            JSON.stringify(json);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 }
 
