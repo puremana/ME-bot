@@ -4,24 +4,29 @@ const Discord = require("discord.js");
 var bot = new Discord.Client();
 var customCommands = require('./storage/custom.json');
 var commands = require('./commands.js');
+var functions = require('./functions.js');
 var schedule = require('node-schedule');
-const PREFIX = setEnv(process.env.PREFIX, "$");
+var variables = require('./variables.js');
+
+const PREFIX = functions.setEnv(process.env.PREFIX, "$");
 const questionRegex = /^[PREFIX]+$/;
 const TOKEN = process.env.BOT_TOKEN;
-const TIMEOUT = setEnv(process.env.TIMEOUT, 1500);
+const TIMEOUT = functions.setEnv(process.env.TIMEOUT, 1500);
 const SERVER_ID = process.env.SERVER_ID;
-const BINGO_ROLE_NAME = setEnv(process.env.BINGO_ROLE_NAME, "bingo");
-const WEEKLIES_ROLE_NAME = setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
+const BINGO_ROLE_NAME = functions.setEnv(process.env.BINGO_ROLE_NAME, "bingo");
+const WEEKLIES_ROLE_NAME = functions.setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
-const WEEKLIES = setEnv(process.env.WEEKLIES.toLowerCase(), 'false');
+const WEEKLIES = functions.setEnv(process.env.WEEKLIES.toLowerCase(), 'false');
 const BINGO_CHANNEL_ID = process.env.BINGO_CHANNEL_ID;
 
+
 //Load Bot - loop through functions in commands and add to hashmap
+variables.setters["setBot"](bot);
+
 var hashArray = [];
 for (com in commands.functions) {
     hashArray.push(com);
 }
-commands.setters["setBot"](bot);
 
 //scheduler for bingo
 var rule = new schedule.RecurrenceRule();
@@ -36,7 +41,7 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
     bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
 });
 
-commands.setters["setBingoFunction"](bingoFunction);
+variables.setters["setBingoFunction"](bingoFunction);
 
 if (WEEKLIES === 'true') {
     // Scheduler for Weeklies
@@ -52,7 +57,7 @@ if (WEEKLIES === 'true') {
         bot.guilds.find(name => name.id === SERVER_ID).channels.find("name", "parties").send("<@&" + weekliesRole.id + "> Weekly Parties are out! :tada:");
     });
 
-    commands.setters["setWeekliesFunction"](weekliesFunction);
+    variables.setters["setWeekliesFunction"](weekliesFunction);
 
     // Scheduler for After Weeklies
     var afterWeekliesRule = new schedule.RecurrenceRule();
@@ -127,11 +132,6 @@ var deleteMessage = function(message) {
         message.delete(TIMEOUT)
             .catch(err => {});
     }
-}
-
-// If the env variable is not set, use a default variable
-function setEnv(envVariable, defaultVariable) {
-    return Object.is(envVariable, undefined) ? defaultVariable : envVariable;
 }
 
 function trimMultipleSpaces(content) {
