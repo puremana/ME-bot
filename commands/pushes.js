@@ -659,7 +659,7 @@ module.exports = {
             return;
         }
 
-        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) && !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to clear messages in this push.");
             return;
         }
@@ -703,7 +703,7 @@ module.exports = {
             return;
         }
 
-        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) || !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
+        if (!message.member.roles.find(role => role.name === pushes[message.channel.id]["leaders"]) && !message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id)) {
             pushReply(message, "You require the " + pushes[message.channel.id]["leaders"] + " role to move players in this push.");
             return;
         }
