@@ -54,7 +54,26 @@ module.exports = {
         message.channel.send("Processing...")
         .then(m => {        
             //create push
-            var pJson = {"messageid" : m.id, "channel name": message.channel.name, "author" : message.author.id, "slots" : rawSplit[1], "ending date" : rawSplit[3], "push time" : rawSplit[5], "leaders" : rawSplit[7], "description" : rawSplit[9], "inviter" : rawSplit[11], "invites" : [], "currently" : [], "queue" : [], "showcommands": true, "pushids" : [], "requeue" : true, "pushnames" : [], "alts": true};
+            var pJson = {
+                "messageid" : m.id,
+                "channel name": message.channel.name,
+                "author" : message.author.id,
+                "slots" : rawSplit[1],
+                "ending date" : rawSplit[3],
+                "push time" : rawSplit[5],
+                "leaders" : rawSplit[7],
+                "description" : rawSplit[9],
+                "inviter" : rawSplit[11],
+                "invites" : [],
+                "currently" : [],
+                "queue" : [],
+                "showcommands": true,
+                "pushids" : [],
+                "requeue" : true,
+                "pushnames" : [],
+                "alts": true,
+                "stopped": false
+            };
             if (!functions.verifyJson(pJson)) {
                 pushReply(message, "Push could not be saved. Please try again.");
                 return;
@@ -95,6 +114,11 @@ module.exports = {
     signup: function(message) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (pushes[message.channel.id]["stopped"]) {
+            pushReply(message, "This push is coming to an end and the bot is not accepting any more signups at this time.");
             return;
         }
 
@@ -173,6 +197,11 @@ module.exports = {
     queuejoin: function(message, prefixText) {
         if (!pushes.hasOwnProperty(message.channel.id)) {
             pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (pushes[message.channel.id]["stopped"]) {
+            pushReply(message, "This push is coming to an end and the bot is not accepting any more signups at this time.");
             return;
         }
 
@@ -823,7 +852,55 @@ module.exports = {
         }
         functions.saveJson('pushes', pushes);
         log("<@" + message.author.id + "> has toggled the re-queue mode to be " + pushes[message.channel.id]['requeue'] + " in " + message.guild.channels.get(message.channel.id).toString());
-    },    
+    },
+    pushstart: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            pushReply(message, "You require the Leadership role to start this push.");
+            return;
+        }
+
+        if (pushes[message.channel.id]["stopped"]) {
+            pushes[message.channel.id]["stopped"] = false;
+            functions.saveJson('pushes', pushes);
+            let embed = createPushEmbed(message.channel.id);
+            message.channel.fetchMessage(pushes[message.channel.id]["messageid"])
+            .then(m => {
+                m.edit(embed);
+            })
+            pushReply(message, "The push has been started.");
+        } else {
+            pushReply(message, "The push is already started.");
+        }
+    },
+    pushstop: function(message) {
+        if (!pushes.hasOwnProperty(message.channel.id)) {
+            pushReply(message, "Could not find a push in this channel.");
+            return;
+        }
+
+        if (!(message.member.roles.has(message.guild.roles.get(LEADERSHIPID).id) || (message.author.id == "146412379633221632"))) {
+            pushReply(message, "You require the Leadership role to stop this push.");
+            return;
+        }
+
+        if (!pushes[message.channel.id]["stopped"]) {
+            pushes[message.channel.id]["stopped"] = true;
+            functions.saveJson('pushes', pushes);
+            let embed = createPushEmbed(message.channel.id);
+            message.channel.fetchMessage(pushes[message.channel.id]["messageid"])
+            .then(m => {
+                m.edit(embed);
+            })
+            pushReply(message, "The push has been stopped.");
+        } else {
+            pushReply(message, "The push is already stopped.");
+        }
+    }
 }
 
 function rewriteEmbed(message) {
@@ -904,9 +981,14 @@ function createPushEmbed(id) {
 
     let bot = variables.functions["getBot"]();
 
+    let stopped = "";
+    if (pushes[id]["stopped"]) {
+        stopped = " [STOPPED]";
+    }
+
     if (pInfo["showcommands"]) {
         var embed = new Discord.RichEmbed()
-        .setAuthor(pInfo["channel name"], bot.user.avatarURL)
+        .setAuthor(pInfo["channel name"] + stopped, bot.user.avatarURL)
         .addField("Description", pInfo["description"])
         .addField("Instructions", PUSHINSTRUCTIONS)
         .addField("Ending Date", pInfo["ending date"], true)
