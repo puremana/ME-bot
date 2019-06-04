@@ -873,6 +873,7 @@ module.exports = {
                 m.edit(embed);
             })
             pushReply(message, "The push has been started.");
+            log("<@" + message.author.id + "> has started the push in channel " + message.guild.channels.get(message.channel.id).toString());
         } else {
             pushReply(message, "The push is already started.");
         }
@@ -897,6 +898,7 @@ module.exports = {
                 m.edit(embed);
             })
             pushReply(message, "The push has been stopped.");
+            log("<@" + message.author.id + "> has stopped the push in channel " + message.guild.channels.get(message.channel.id).toString());
         } else {
             pushReply(message, "The push is already stopped.");
         }

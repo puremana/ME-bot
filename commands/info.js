@@ -33,8 +33,10 @@ module.exports = {
                     additionalBot = PREFIX + "add *(Leadership only)* - `" + PREFIX + "add command-name description` \n" +  
                     PREFIX + "remove *(Leadership only)* - `" + PREFIX + "remove command-name` \n";
                     additionalBot = additionalBot + PREFIX + "echo *(Leadership only)* \n";
-                    pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" "(optional) inviter role name" \n' +
-                    PREFIX + 'pushdelete \n';
+                    pushCommands += PREFIX + 'pushsetup "available slots" "push end date" "push time" "leader role name" "push description" "(optional) inviter role name" *(Leadership only)* \n' +
+                    PREFIX + 'pushdelete *(Leadership only)* \n' +
+                    PREFIX + 'pushstart *(Leadership only)* \n' +
+                    PREFIX + 'pushstop *(Leadership only)* \n';
                 }
             }
         }

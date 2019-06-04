@@ -58,6 +58,8 @@ All commands start with the prefix allocated in the bot.js and command.js files.
 - Push Commands
   - `pushsetup` - `pushsetup "available slots" "ending date" "push time" "leader role name" "description of push" "(optional) inviter role name"` *(Admin only)*
   - `pushdelete` *(Admin only)*
+  - `pushstart` *(Admin only)*
+  - `pushstop` *(Admin only)*
   - `updateinviter` - `updateinviter InviterRoleName` *(Admin only)*
   - `sent` - `sent AccountName` *(Leaders only)*
   - `senttop` - `senttop NumberOfPopleToDelete` *(Leaders only)*
