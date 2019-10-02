@@ -43,6 +43,19 @@ var bingoFunction = schedule.scheduleJob(rule, function(){
 
 variables.setters["setBingoFunction"](bingoFunction);
 
+//scheduler for bingo
+var extraRule = new schedule.RecurrenceRule();
+extraRule.dayOfWeek = [0,6];
+extraRule.hour = [2,6,10,14,18,22];
+extraRule.minute = 8;
+//set to utc
+extraRule.tz = 'America/Indiana/Indianapolis';
+
+var extraBingoFunction = schedule.scheduleJob(extraRule, function(){
+    var bingoRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === BINGO_ROLE_NAME);
+    bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> remember to dab! :dab:");
+});
+
 if (WEEKLIES === 'true') {
     // Scheduler for Weeklies
     var weekliesRule = new schedule.RecurrenceRule();
