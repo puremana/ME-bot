@@ -100,4 +100,4 @@ We welcome all types of contributions to the ME-Bot. If you have a bug to report
 If you wish to contribute to the code base, please fork the repo and send a pull request for each feature you are intending to add.
 
 ## Contact
-If you wish to discuss anything on this readme, feel free to get in touch with me on Discord, username Level#0923.
+If you wish to discuss anything on this readme, feel free to get in touch with me on Discord, username Level#0001.
