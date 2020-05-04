@@ -13,6 +13,7 @@ const questionRegex = /^[PREFIX]+$/;
 const TOKEN = process.env.BOT_TOKEN;
 const TIMEOUT = functions.setEnv(process.env.TIMEOUT, 1500);
 const SERVER_ID = process.env.SERVER_ID;
+const BINGO = functions.setEnv(process.env.FUN_COMMANDS.toLowerCase(), "true");
 const BINGO_ROLE_NAME = functions.setEnv(process.env.BINGO_ROLE_NAME, "bingo");
 const WEEKLIES_ROLE_NAME = functions.setEnv(process.env.WEEKLIES_ROLE_NAME, "weeklies");
 const LEADERSHIPID = process.env.LEADERSHIP_ID;
@@ -28,33 +29,35 @@ for (com in commands.functions) {
     hashArray.push(com);
 }
 
-//scheduler for bingo
-var rule = new schedule.RecurrenceRule();
-rule.dayOfWeek = [0,6];
-rule.hour = [1,5,9,13,17,21];
-rule.minute = 50;
-//set to utc
-rule.tz = 'America/Indiana/Indianapolis';
+if (BINGO === 'true') {
+    // Scheduler for bingo
+    var rule = new schedule.RecurrenceRule();
+    rule.dayOfWeek = [0,6];
+    rule.hour = [1,5,9,13,17,21];
+    rule.minute = 50;
+    //set to utc
+    rule.tz = 'America/Indiana/Indianapolis';
 
-var bingoFunction = schedule.scheduleJob(rule, function(){
-    var bingoRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === BINGO_ROLE_NAME);
-    bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
-});
+    var bingoFunction = schedule.scheduleJob(rule, function(){
+        var bingoRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === BINGO_ROLE_NAME);
+        bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> 10 Minutes till Bingo! :tada:");
+    });
 
-variables.setters["setBingoFunction"](bingoFunction);
+    variables.setters["setBingoFunction"](bingoFunction);
 
-//scheduler for bingo
-var extraRule = new schedule.RecurrenceRule();
-extraRule.dayOfWeek = [0,6];
-extraRule.hour = [2,6,10,14,18,22];
-extraRule.minute = 8;
-//set to utc
-extraRule.tz = 'America/Indiana/Indianapolis';
+    //scheduler for bingo
+    var extraRule = new schedule.RecurrenceRule();
+    extraRule.dayOfWeek = [0,6];
+    extraRule.hour = [2,6,10,14,18,22];
+    extraRule.minute = 8;
+    //set to utc
+    extraRule.tz = 'America/Indiana/Indianapolis';
 
-var extraBingoFunction = schedule.scheduleJob(extraRule, function(){
-    var bingoRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === BINGO_ROLE_NAME);
-    bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> remember to dab! :dab:");
-});
+    var extraBingoFunction = schedule.scheduleJob(extraRule, function(){
+        var bingoRole = bot.guilds.find(name => name.id === SERVER_ID).roles.find(role => role.name === BINGO_ROLE_NAME);
+        bot.guilds.find(name => name.id === SERVER_ID).channels.find(name => name.id === BINGO_CHANNEL_ID).send("<@&" + bingoRole.id + "> remember to dab! :dab:");
+    });
+}
 
 if (WEEKLIES === 'true') {
     // Scheduler for Weeklies
